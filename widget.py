@@ -164,7 +164,7 @@ class CompositeLibrary(wx.Panel):
         for document in file_paths:
             _dlg = dialog.AddDocument(self, self.root, document)
             _dlg.ShowModal()
-            if _dlg: _dlg.Destroy()
+            #if _dlg: _dlg.DestroyLater()
 
     def evt_resize(self, event):
         """Move the button overlay when resized

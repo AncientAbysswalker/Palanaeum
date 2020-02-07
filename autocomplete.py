@@ -1,77 +1,12 @@
 # -*- coding: utf-8 -*-
-__license__ = """Copyright (c) 2008-2019, Toni Ruža, All rights reserved.
+"""This module contains as class of widgets that support auto-completion dropdowns and forced lowercase text. \n
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 'AS IS'
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE."""
-
-#Test
+    Forked from the original source code by Toni Ruža at http://bitbucket.org/raz/wxautocompletectrl."""
 
 import wx
 import wx.html
-import string
 
-__author__ = "Toni Ruža <toni.ruza@gmail.com>"
-__url__ = "http://bitbucket.org/raz/wxautocompletectrl"
-
-
-def list_completer(a_list):
-    def completer(query):
-        formatted, unformatted = list(), list()
-        if query:
-            unformatted = [item for item in a_list if query in item]
-            for item in unformatted:
-                s = item.find(query)
-                formatted.append(
-                    "%s<b><u>%s</b></u>%s" % (item[:s], query, item[s + len(query):])
-                )
-
-        return formatted, unformatted
-    return completer
-
-
-class LowercaseTextCtrl(wx.TextCtrl):
-    """Custom wrapper for wx.TextCtrl that forces all typed (ASCII) text to resolve as lowercase
-
-        Args:
-            *args and **args are directly passed to base wx.TextCtrl
-    """
-
-    def __init__(self, *args, **kwargs):
-        """Constructor"""
-        super(LowercaseTextCtrl, self).__init__(*args, **kwargs)
-        self.Bind(wx.EVT_CHAR, self.on_char)
-
-    def on_char(self, event):
-        """Capture keystrokes and replace uppercase letters with lowercase letters
-
-            Args:
-                event: A keystroke event passed to the wx.TextCtrl
-        """
-
-        key = event.GetKeyCode()
-        text_ctrl = event.GetEventObject()
-        if chr(key) in string.ascii_letters:
-            text_ctrl.AppendText(chr(key).lower())
-            return
-        event.Skip()
+import case_control
 
 
 # noinspection PyPep8Naming
@@ -130,7 +65,7 @@ class SuggestionsPopup(wx.Frame):
 
 
 # noinspection PyPep8Naming
-class AutocompleteTextCtrl(LowercaseTextCtrl):
+class LowercaseTextCtrl(case_control.LowercaseTextCtrl):
 
     completer = None
     popup = None
@@ -143,16 +78,20 @@ class AutocompleteTextCtrl(LowercaseTextCtrl):
         style = style | wx.TE_PROCESS_ENTER
         if multiline:
             style = style | wx.TE_MULTILINE
-        LowercaseTextCtrl.__init__(
+
+        # This line has changed to make the original wx.TextCtrl have forced lowercase text
+        case_control.LowercaseTextCtrl.__init__(
             self, parent, id_, value, pos, size, style, validator, name
         )
         self.height = height
         self.frequency = frequency
         self.append_mode = append_mode
+
+        # Handling for different data-types of completer
         if completer:
             if type(completer) == list:
-                self.SetCompleter(list_completer(completer))
-            else
+                self.SetCompleter(self.list_completer(completer))
+            else:
                 self.SetCompleter(completer)
 
         self.queued_popup = False
@@ -294,3 +233,19 @@ class AutocompleteTextCtrl(LowercaseTextCtrl):
         self.SetValue(
             self.GetValue()[:len(value) - maxpos] + selection_suggestion
         )
+
+    @staticmethod
+    def list_completer(a_list):
+        def completer(query):
+            formatted, unformatted = list(), list()
+            if query:
+                unformatted = [item for item in a_list if query in item]
+                for item in unformatted:
+                    s = item.find(query)
+                    formatted.append(
+                        "%s<b><u>%s</b></u>%s" % (item[:s], query, item[s + len(query):])
+                    )
+
+            return formatted, unformatted
+
+        return completer

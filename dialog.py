@@ -14,7 +14,7 @@ import config
 import global_colors
 import fn_path
 import fn_gfx
-from autocomplete import AutocompleteTextCtrl
+import autocomplete
 
 DOCTYPE = ["C+S",
            "RM",
@@ -72,7 +72,7 @@ class AddDocument(wx.Dialog):
         szr_drop.Add(self.wgt_drop_l3, proportion=1, flag=wx.ALL, border=5)
 
         # Tag addition box and bind
-        self.wgt_add_tag = AutocompleteTextCtrl(self, completer=list_completer(TEST_AUTO), style=wx.TE_PROCESS_ENTER)
+        self.wgt_add_tag = autocomplete.LowercaseTextCtrl(self, completer=TEST_AUTO, style=wx.TE_PROCESS_ENTER)
         # self.wgt_add_tag = wx.TextCtrl(self,
         #                                # size=(PaneMain.bar_size * 10, PaneMain.bar_size),
         #                                style=wx.TE_PROCESS_ENTER)
@@ -137,7 +137,7 @@ class AddDocument(wx.Dialog):
             Args:
                 event: A button event object passed from the button click
         """
-        self.evt_add_tag(event)
+        # self.evt_add_tag(event)
 
         print("Docname: "+self.doc_name+"\nTitle: "+self.wgt_title.GetValue()+" \nTags: "+"\n".join(self.ls_tags)+" \nUser: "+os.getlogin()+" \nTimestamp: "+str(datetime.datetime.now()))
 
@@ -184,7 +184,7 @@ class AddDocument(wx.Dialog):
                 args[0]: Null, or an event object passed from the calling event
         """
 
-        self.Destroy()
+        self.DestroyLater()
 
 
 class BaseModifyField(wx.Dialog):
