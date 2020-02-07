@@ -14,6 +14,7 @@ import config
 import global_colors
 import fn_path
 import fn_gfx
+from autocomplete_ctrl import AutocompleteTextCtrl
 
 DOCTYPE = ["C+S",
            "RM",
@@ -32,6 +33,25 @@ L3_DISP = ["Unicorns",
            "CAKE",
            "IS",
            "LIE"]
+
+TEST_AUTO = ["aware","seat","pop","terrific","aromatic","chin","nosy","chickens","escape","airplane","encouraging","righteous","bell","surprise","scattered","barbarous","unbecoming","slip","metal","tired","grin","existence","crawl","odd","oranges","onerous","obnoxious","thought","blow","field","simplistic","scarce","madly","well-groomed","pleasure","laughable","sugar","hushed","chief","first","materialistic","roasted","purple","nervous","grey","smoggy","please","rampant","clumsy","utter","careless","wrench","erect","clear","taste","classy","mouth","wandering","grape","worthless","worm","expert","mass","park","alive","abandoned","valuable","instruct","self","rod","glossy","royal","statement","search","mammoth","nonstop","handsome","turkey","obedient","doll","horses","promise","stupid","corn","fall","steady","press","detailed","laugh","hateful","market","picture","versed","ground","boundary","bow","cake","juggle","jagged","impolite","touch","internal","oceanic","position","aloof","utopian","rapid","nut","employ","somber","lie","men","film","fax","porter","spurious","cemetery","hum","machine","gaze","crack","worry","macabre","scrape","real","flame","abnormal","perform","spicy","married","count","juvenile","mighty","live","tasteful","wrist","watery","wonder","shy","enthusiastic","cub","grade","disgusted","lean","hose","letters","guide","income","bored","divergent","party","scare","kick","overwrought","relieved","long-term","ablaze","identify","sofa","dinosaurs","wander","alike","offbeat","lumpy","basin","advise","tawdry","dynamic","quick","imminent","daily","behave","resolute","useless","toe","habitual","mushy","stove","tiny","simple","baby","rotten","wrathful","dear","bashful","help","precede","carry","needy","guitar","calculating","innocent","gratis","neat","calculator","reward","heat","heavenly","painstaking","ocean","grandmother","hapless","waggish","subtract","yak","form","chance","suck","uppity","fierce","slippery","daughter","toys","acoustic","cherries","magnificent","aspiring","flawless","elite","wet","lick","loss","treatment","foolish","feeble","surround","berry","damaging","minister","describe","yellow","houses","island","beginner","books","right","squalid","sturdy","bed","plan","excellent","well-made","stupendous","snow","icy","smart","delight","exclusive","sleep","homely","powerful","fold","crime","scratch","truck","wanting","safe","drum","desk","respect","instinctive","knowing","sloppy","fat","bear","spiritual","well-to-do","clean","tearful","warm","believe","bawdy","stone","useful","toothsome","hideous","spiders","potato","mean","discussion","equal","work","bottle","hole","confuse","slimy","story","goofy","motionless","flavor","hurt","pump","tree","yarn","berserk","motion","humorous","poke","jittery","women","aberrant","guess","ink","wait","earn","young","inexpensive","ceaseless","protest","tedious","harmonious","flaky","marry","deceive","tramp","subdued","draconian","calendar","adhesive","gaping","luxuriant","certain","bubble","separate","boorish","check","spring","guarantee","chalk","protect","side","aboriginal","cheerful","twig","fluttering","evanescent","confused","precious","determined","faithful","alluring","premium","rat","produce","capable","one","long","frightening","mine","star","swanky","lavish","gaudy","sigh","man","transport","sheet","stocking","pan","drain","include","offer","afraid","salty","amuse","consider","creepy","light","purring","bucket","expansion","wooden","float","replace","rabbit","moldy","dramatic","lively","communicate","spare","straight","ghost","screeching","lying","regular","resonant","volleyball","general","fix","grumpy","crate","sail","cream","suggestion","haunt","plate","found","lethal","pear","violent","breezy","fluffy","eggs","future","daffy","tangible","lumber","unique","connect","arrest","nice","fetch","obtain","psychedelic","lowly","helpful","plane","expand","feigned","truthful","harm","knowledge","dapper","look","suspect","friendly","oil","sneaky","sleepy","thunder","filthy","volcano","bolt","shoes","death","vacation","pollution","shoe","skirt","discovery","number","deliver","credit","health","nation","care","infamous","return","decay","redundant","greet","road","gate","repeat","brief","obsequious","tomatoes","unequaled","halting","ill","shirt","cover","dry","thread","drunk","applaud","smash","wheel","deep","inject","busy","stage","hurried","icky","disastrous","cooing","ruin","limit","chubby","dream","decisive","wary","toes","secret","voice","baseball","bathe","run","overjoyed","chop","rifle","slave","rain","wool","sad","accept","copper","lame","bit","knife"]
+
+template = "%s<b><u>%s</b></u>%s"
+
+def list_completer(a_list):
+    def completer(query):
+        formatted, unformatted = list(), list()
+        if query:
+            unformatted = [item for item in a_list if query in item]
+            for item in unformatted:
+                s = item.find(query)
+                formatted.append(
+                    template % (item[:s], query, item[s + len(query):])
+                )
+
+        return formatted, unformatted
+    return completer
+
 
 class AddDocument(wx.Dialog):
     """Opens a dialog to edit document information prior to adding to the database
@@ -68,9 +88,10 @@ class AddDocument(wx.Dialog):
         szr_drop.Add(self.wgt_drop_l3, proportion=1, flag=wx.ALL, border=5)
 
         # Tag addition box and bind
-        self.wgt_add_tag = wx.TextCtrl(self,
-                                       # size=(PaneMain.bar_size * 10, PaneMain.bar_size),
-                                       style=wx.TE_PROCESS_ENTER)
+        self.wgt_add_tag = AutocompleteTextCtrl(self, completer=list_completer(TEST_AUTO), style=wx.TE_PROCESS_ENTER)
+        # self.wgt_add_tag = wx.TextCtrl(self,
+        #                                # size=(PaneMain.bar_size * 10, PaneMain.bar_size),
+        #                                style=wx.TE_PROCESS_ENTER)
         self.wgt_add_tag.Bind(wx.EVT_TEXT_ENTER, self.evt_add_tag)
 
         # Tag addition box and bind
