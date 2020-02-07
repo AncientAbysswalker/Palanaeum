@@ -30,6 +30,48 @@ __author__ = "Toni Ruža <toni.ruza@gmail.com>"
 __url__ = "http://bitbucket.org/raz/wxautocompletectrl"
 
 
+def list_completer(a_list):
+    def completer(query):
+        formatted, unformatted = list(), list()
+        if query:
+            unformatted = [item for item in a_list if query in item]
+            for item in unformatted:
+                s = item.find(query)
+                formatted.append(
+                    "%s<b><u>%s</b></u>%s" % (item[:s], query, item[s + len(query):])
+                )
+
+        return formatted, unformatted
+    return completer
+
+
+class LowercaseTextCtrl(wx.TextCtrl):
+    """Custom wrapper for wx.TextCtrl that forces all typed (ASCII) text to resolve as lowercase
+
+        Args:
+            *args and **args are directly passed to base wx.TextCtrl
+    """
+
+    def __init__(self, *args, **kwargs):
+        """Constructor"""
+        super(LowercaseTextCtrl, self).__init__(*args, **kwargs)
+        self.Bind(wx.EVT_CHAR, self.on_char)
+
+    def on_char(self, event):
+        """Capture keystrokes and replace uppercase letters with lowercase letters
+
+            Args:
+                event: A keystroke event passed to the wx.TextCtrl
+        """
+
+        key = event.GetKeyCode()
+        text_ctrl = event.GetEventObject()
+        if chr(key) in string.ascii_letters:
+            text_ctrl.AppendText(chr(key).lower())
+            return
+        event.Skip()
+
+
 # noinspection PyPep8Naming
 class SuggestionsPopup(wx.Frame):
     def __init__(self, parent):
@@ -85,33 +127,6 @@ class SuggestionsPopup(wx.Frame):
         return self.unformated_suggestions[n]
 
 
-class LowercaseTextCtrl(wx.TextCtrl):
-    """Custom wrapper for wx.TextCtrl that forces all typed (ASCII) text to resolve as lowercase
-
-        Args:
-            *args and **args are directly passed to base wx.TextCtrl
-    """
-
-    def __init__(self, *args, **kwargs):
-        """Constructor"""
-        super(LowercaseTextCtrl, self).__init__(*args, **kwargs)
-        self.Bind(wx.EVT_CHAR, self.on_char)
-
-    def on_char(self, event):
-        """Capture keystrokes and replace uppercase letters with lowercase letters
-
-            Args:
-                event: A keystroke event passed to the wx.TextCtrl
-        """
-
-        key = event.GetKeyCode()
-        text_ctrl = event.GetEventObject()
-        if chr(key) in string.ascii_letters:
-            text_ctrl.AppendText(chr(key).lower())
-            return
-        event.Skip()
-
-
 # noinspection PyPep8Naming
 class AutocompleteTextCtrl(LowercaseTextCtrl):
 
@@ -133,7 +148,10 @@ class AutocompleteTextCtrl(LowercaseTextCtrl):
         self.frequency = frequency
         self.append_mode = append_mode
         if completer:
-            self.SetCompleter(completer)
+            if type(completer) == list:
+                self.SetCompleter(list_completer(completer))
+            else
+                self.SetCompleter(completer)
 
         self.queued_popup = False
         self.skip_event = False
