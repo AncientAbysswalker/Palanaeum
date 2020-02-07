@@ -15,6 +15,23 @@ import global_colors
 import fn_path
 import fn_gfx
 
+DOCTYPE = ["C+S",
+           "RM",
+           "Cat",
+           "Calc"]
+
+DISCIPLINES = ["Mech",
+               "Structural",
+               "Geotech",
+               "Electrical",
+               "Seismic"]
+
+L3_DISP = ["Unicorns",
+           "Ponies",
+           "Fun Squirrels",
+           "CAKE",
+           "IS",
+           "LIE"]
 
 class AddDocument(wx.Dialog):
     """Opens a dialog to edit document information prior to adding to the database
@@ -30,23 +47,40 @@ class AddDocument(wx.Dialog):
             old_type (str): The value of the part's "type" before editing
     """
 
-    def __init__(self, parent, root, old_type):
+    def __init__(self, parent, root, doc_path):
         """Constructor"""
         super().__init__(parent)
 
         self.parent = parent
         self.root = root
-
-        # The value of the type value before editing
-        self.old_type = old_type
+        self.doc_path = doc_path
+        self.doc_name = os.path.basename(doc_path)
+        self.ls_tags = []
 
         # Type selection dropdown, with bind and sizer
-        self.wgt_drop_type = wx.ComboBox(self, choices=["Assembly", "Manufactured", "Purchased"], style=wx.CB_READONLY)
+        self.wgt_filename = wx.StaticText(self, label=self.doc_name, style=wx.ALIGN_CENTER)
+        self.wgt_drop_doctype = wx.ComboBox(self, choices=DOCTYPE, style=wx.CB_READONLY)
+        self.wgt_drop_discipline = wx.ComboBox(self, choices=DISCIPLINES, style=wx.CB_READONLY)
+        self.wgt_drop_l3 = wx.ComboBox(self, choices=L3_DISP, style=wx.CB_READONLY)
         szr_drop = wx.StaticBoxSizer(wx.StaticBox(self, label="Select the type for this part to fall under"), orient=wx.HORIZONTAL)
-        szr_drop.Add(self.wgt_drop_type, proportion=1, flag=wx.ALL, border=5)
+        szr_drop.Add(self.wgt_drop_doctype, proportion=1, flag=wx.ALL, border=5)
+        szr_drop.Add(self.wgt_drop_discipline, proportion=1, flag=wx.ALL, border=5)
+        szr_drop.Add(self.wgt_drop_l3, proportion=1, flag=wx.ALL, border=5)
+
+        # Tag addition box and bind
+        self.wgt_add_tag = wx.TextCtrl(self,
+                                       # size=(PaneMain.bar_size * 10, PaneMain.bar_size),
+                                       style=wx.TE_PROCESS_ENTER)
+        self.wgt_add_tag.Bind(wx.EVT_TEXT_ENTER, self.evt_add_tag)
+
+        # Tag addition box and bind
+        self.wgt_title = wx.TextCtrl(self, style=wx.EXPAND)
+
+        # Added PDFs display pane
+        self.wgt_tags = wx.TextCtrl(self, size=(50, -1), style=wx.TE_READONLY | wx.TE_MULTILINE | wx.EXPAND)
 
         # Set initial selection
-        self.wgt_drop_type.SetValue(self.old_type)
+        # self.wgt_drop_doctype.SetValue(self.old_type)
 
         # Dialog buttons with binds
         btn_commit = wx.Button(self, label='Commit')
@@ -61,15 +95,36 @@ class AddDocument(wx.Dialog):
 
         # Add everything to master sizer and set sizer for pane
         szr_master = wx.BoxSizer(wx.VERTICAL)
+        szr_master.Add(self.wgt_filename, proportion=1, flag=wx.ALL | wx.EXPAND, border=5)
         szr_master.Add(szr_drop, proportion=1, flag=wx.ALL | wx.EXPAND, border=5)
+        szr_master.Add(self.wgt_title, proportion=1, flag=wx.ALL | wx.EXPAND, border=5)
+        szr_master.Add(self.wgt_add_tag, proportion=1, flag=wx.ALL | wx.EXPAND, border=5)
         szr_master.Add(szr_buttons, flag=wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border=10)
-        self.SetSizer(szr_master)
+
+        szr_main = wx.BoxSizer(wx.HORIZONTAL)
+        szr_main.Add(szr_master, proportion=1, flag=wx.EXPAND | wx.ALL, border=20)
+        szr_main.Add(self.wgt_tags, proportion=3, flag=wx.EXPAND)
+
+        self.SetSizer(szr_main)
 
         # Set size and title
-        self.SetSize((500, 160))
+        self.SetSize((500, 360))
         self.SetTitle("Change the 'type' for this component")
 
         self.Bind(wx.EVT_CLOSE, self.evt_close)
+
+    def evt_add_tag(self, event):
+        """Execute when committing a change to the part type
+
+            Args:
+                event: A button event object passed from the button click
+        """
+
+        if self.wgt_add_tag.GetValue() and self.wgt_add_tag.GetValue() not in self.ls_tags:
+            self.ls_tags.append(self.wgt_add_tag.GetValue())
+            self.wgt_tags.SetValue("\n".join(self.ls_tags))
+
+        self.wgt_add_tag.SetValue("")
 
     def evt_commit(self, event):
         """Execute when committing a change to the part type
@@ -77,33 +132,36 @@ class AddDocument(wx.Dialog):
             Args:
                 event: A button event object passed from the button click
         """
+        self.evt_add_tag(event)
 
-        # Only carry out the event if any item in the dropdown is selected
-        if self.wgt_drop_type.GetSelection() != -1:
-            # The newly selected type
-            _new_type = self.wgt_drop_type.GetValue()
+        print("Docname: "+self.doc_name+"\nTitle: "+self.wgt_title.GetValue()+" \nTags: "+"\n".join(self.ls_tags)+" \nUser: "+os.getlogin()+" \nTimestamp: "+str(datetime.datetime.now()))
 
-            # If the type has changed then commit the change before closing the dialog
-            if self.old_type != _new_type:
-                # Change the widget text to reflect the change
-                self.root.wgt_txt_part_type.SetLabel(_new_type)
+        # # Only carry out the event if any item in the dropdown is selected
+        # if self.wgt_drop_doctype.GetSelection() != -1:
+        #     # The newly selected type
+        #     _new_type = self.wgt_drop_doctype.GetValue()
+        #
+        #     # If the type has changed then commit the change before closing the dialog
+        #     if self.old_type != _new_type:
+        #         # Change the widget text to reflect the change
+        #         self.root.wgt_txt_part_type.SetLabel(_new_type)
+        #
+        #         # Connect to the database
+        #         conn = config.sql_db.connect(config.cfg["db_location"])
+        #         crsr = conn.cursor()
+        #
+        #         # Modify the existing cell in the database for existing part number and desired column
+        #         crsr.execute("UPDATE Parts SET part_type=(?) WHERE part_num=(?) AND part_rev=(?);",
+        #                      (_new_type, self.root.part_num, self.root.part_rev))
+        #
+        #         conn.commit()
+        #         crsr.close()
+        #         conn.close()
+        #
+        #         # Color the text black after submitting the edit
+        #         self.root.wgt_txt_part_type.SetForegroundColour(global_colors.standard)
 
-                # Connect to the database
-                conn = config.sql_db.connect(config.cfg["db_location"])
-                crsr = conn.cursor()
-
-                # Modify the existing cell in the database for existing part number and desired column
-                crsr.execute("UPDATE Parts SET part_type=(?) WHERE part_num=(?) AND part_rev=(?);",
-                             (_new_type, self.root.part_num, self.root.part_rev))
-
-                conn.commit()
-                crsr.close()
-                conn.close()
-
-                # Color the text black after submitting the edit
-                self.root.wgt_txt_part_type.SetForegroundColour(global_colors.standard)
-
-            self.evt_close()
+        self.evt_close()
 
     def evt_cancel(self, event):
         """Cancel the change and close the dialog

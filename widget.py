@@ -46,23 +46,7 @@ class DummyFileDrop(wx.FileDropTarget):
 
         return True
 
-DOCTYPE = ["C+S",
-           "RM",
-           "Cat",
-           "Calc"]
 
-DISCIPLINES = ["Mech",
-               "Structural",
-               "Geotech",
-               "Electrical",
-               "Seismic"]
-
-L3_DISP = ["Unicorns",
-           "Ponies",
-           "Fun Squirrels",
-           "CAKE",
-           "IS",
-           "LIE"]
 
 
 class CompositeLibrary(wx.Panel):
