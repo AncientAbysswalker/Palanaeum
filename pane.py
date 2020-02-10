@@ -6,6 +6,7 @@ import wx
 import login
 import tab
 import fn_path
+import sqlite3
 
 
 class PaneMain(wx.Panel):
@@ -29,6 +30,10 @@ class PaneMain(wx.Panel):
         self.SetDoubleBuffered(True)  # Remove odd effects at main switch to this pane after login
 
         self.parent = parent
+
+        # Search bar and bind
+        self.tags = []
+        self.reload_tags()
 
         # Search bar and bind
         self.wgt_searchbar = wx.TextCtrl(self,
@@ -61,6 +66,52 @@ class PaneMain(wx.Panel):
         self.szr_main.Add(self.wgt_notebook, proportion=1, flag=wx.EXPAND)
 
         self.SetSizer(self.szr_main)
+
+    def reload_tags(self):
+        """Loads a list of available tags from the SQL database and populates to self.tags"""
+
+        # Connect to the database
+        conn = sqlite3.connect(r"C:\Users\JA\PycharmProjects\Palanaeum\test.sqlite")
+        crsr = conn.cursor()
+
+        # Retrieve list of all tags from SQL database and write to self.tags
+        crsr.execute("SELECT tag FROM Tags;")
+        self.tags = [i[0] for i in crsr.fetchall()]
+        conn.close()
+
+    def add_tags(self, add_tags):
+        """Loads a list of available tags from the SQL database and populates to self.tags
+
+            Returns:
+                (list: str): List of strings that are existing tags
+        """
+
+        # Handle single values as lists
+        if type(add_tags) is not list: add_tags = [add_tags]
+
+        print(add_tags)
+        print(self.tags)
+        print([(x,) for x in add_tags if x not in self.tags])
+
+        # Connect to the database
+        conn = sqlite3.connect(r"C:\Users\JA\PycharmProjects\Palanaeum\test.sqlite")
+        crsr = conn.cursor()
+
+        # Modify the existing cell in the database for existing part number and desired column
+        crsr.executemany("INSERT INTO Tags (tag) VALUES (?)",
+                         [(str(x),) for x in add_tags if str(x) not in self.tags])
+
+        #
+        # if _rewrite_value:
+        #     crsr.execute("UPDATE Parts SET (%s)=(?) WHERE part_num=(?) AND part_rev=(?);" % self.sql_field,
+        #                  (_rewrite_value, self.root.part_num, self.root.part_rev))
+        # else:
+        #     crsr.execute("UPDATE Parts SET (%s)=NULL WHERE part_num=(?) AND part_rev=(?);" % self.sql_field,
+        #                  (self.root.part_num, self.root.part_rev))
+
+        conn.commit()
+        crsr.close()
+        conn.close()
 
     def evt_button_no_focus(self, event):
         """Prevents focus from being called on the buttons

@@ -61,6 +61,9 @@ class AddDocument(wx.Dialog):
         self.doc_name = os.path.basename(doc_path)
         self.ls_tags = []
 
+        # Refresh tags list
+        self.root.parent.pane.reload_tags()
+
         # Type selection dropdown, with bind and sizer
         self.wgt_filename = wx.StaticText(self, label=self.doc_name, style=wx.ALIGN_CENTER)
         self.wgt_drop_doctype = wx.ComboBox(self, choices=DOCTYPE, style=wx.CB_READONLY)
@@ -72,7 +75,7 @@ class AddDocument(wx.Dialog):
         szr_drop.Add(self.wgt_drop_l3, proportion=1, flag=wx.ALL, border=5)
 
         # Tag addition box and bind
-        self.wgt_add_tag = autocomplete.LowercaseTextCtrl(self, completer=TEST_AUTO, style=wx.TE_PROCESS_ENTER)
+        self.wgt_add_tag = autocomplete.LowercaseTextCtrl(self, completer=self.root.parent.pane.tags, style=wx.TE_PROCESS_ENTER)
         # self.wgt_add_tag = wx.TextCtrl(self,
         #                                # size=(PaneMain.bar_size * 10, PaneMain.bar_size),
         #                                style=wx.TE_PROCESS_ENTER)
@@ -119,10 +122,10 @@ class AddDocument(wx.Dialog):
         self.Bind(wx.EVT_CLOSE, self.evt_close)
 
     def evt_add_tag(self, event):
-        """Execute when committing a change to the part type
+        """Execute when adding a tag to the list of tags for this document
 
             Args:
-                event: A button event object passed from the button click
+                event: An enter keystroke event object passed from the wx.TextCtrl
         """
 
         if self.wgt_add_tag.GetValue() and self.wgt_add_tag.GetValue() not in self.ls_tags:
@@ -139,7 +142,12 @@ class AddDocument(wx.Dialog):
         """
         # self.evt_add_tag(event)
 
+        # Add any new tags
+        self.root.parent.pane.add_tags(self.ls_tags)
+
         print("Docname: "+self.doc_name+"\nTitle: "+self.wgt_title.GetValue()+" \nTags: "+"\n".join(self.ls_tags)+" \nUser: "+os.getlogin()+" \nTimestamp: "+str(datetime.datetime.now()))
+
+
 
         # # Only carry out the event if any item in the dropdown is selected
         # if self.wgt_drop_doctype.GetSelection() != -1:

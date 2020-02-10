@@ -18,20 +18,20 @@ class Notebook(wx.Notebook):
     """Notebook class that contains various Tab-type classes within itself
 
             Args:
-                parent (ref): Reference to the parent wx.object
+                pane (ref): Reference to the parent wx.object
 
             Attributes:
                 user (str): The logged-in user. Currently hard-coded to "demo"
-                parent (ref): Reference to the parent wx.object
+                pane (ref): Reference to the parent wx.object pane
     """
 
-    def __init__(self, parent):
+    def __init__(self, pane):
         """Constructor"""
-        wx.Notebook.__init__(self, parent)
+        wx.Notebook.__init__(self, pane)
         self.SetDoubleBuffered(True)  # Remove slight strobing on tab switch
 
         self.user = "demo"
-        self.parent = parent
+        self.pane = pane
 
         # Define the open panels and load any that should be opened on start
         self.open_tabs = []
