@@ -7,6 +7,7 @@ import login
 import tab
 import fn_path
 import sqlite3
+import os
 
 
 class PaneMain(wx.Panel):
@@ -71,7 +72,7 @@ class PaneMain(wx.Panel):
         """Loads a list of available tags from the SQL database and populates to self.tags"""
 
         # Connect to the database
-        conn = sqlite3.connect(r"C:\Users\JA\PycharmProjects\Palanaeum\test.sqlite")
+        conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
         crsr = conn.cursor()
 
         # Retrieve list of all tags from SQL database
@@ -94,12 +95,12 @@ class PaneMain(wx.Panel):
         if type(add_tags) is not list: add_tags = [add_tags]
 
         # Connect to the database
-        conn = sqlite3.connect(r"C:\Users\JA\PycharmProjects\Palanaeum\test.sqlite")
+        conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
         crsr = conn.cursor()
 
         # Modify the existing cell in the database for existing part number and desired column
         crsr.executemany("INSERT INTO Tags (tag) "
-                         "VALUES (?)",
+                         "VALUES (?);",
                          [(str(x),) for x in add_tags if str(x) not in self.tags])
 
         # Commit changes and close connection

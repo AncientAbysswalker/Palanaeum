@@ -8,6 +8,8 @@ import hashlib
 import shutil
 import datetime
 
+import sqlite3
+
 import widget
 
 import config
@@ -145,34 +147,27 @@ class AddDocument(wx.Dialog):
         # Add any new tags
         self.root.parent.pane.add_tags(self.ls_tags)
 
-        print("Docname: "+self.doc_name+"\nTitle: "+self.wgt_title.GetValue()+" \nTags: "+"\n".join(self.ls_tags)+" \nUser: "+os.getlogin()+" \nTimestamp: "+str(datetime.datetime.now()))
+        # Connect to the database
+        conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+        crsr = conn.cursor()
 
+        # Add the new document to the library
+        crsr.execute("INSERT INTO Documents (file_name, title, user, time_added) "
+                     "VALUES ((?), (?), (?), (?));",
+                     (self.doc_name, self.wgt_title.GetValue(), os.getlogin(), str(datetime.datetime.now().timestamp())))
 
+        _doc_id = crsr.lastrowid
+        _tag_id = 1
 
-        # # Only carry out the event if any item in the dropdown is selected
-        # if self.wgt_drop_doctype.GetSelection() != -1:
-        #     # The newly selected type
-        #     _new_type = self.wgt_drop_doctype.GetValue()
-        #
-        #     # If the type has changed then commit the change before closing the dialog
-        #     if self.old_type != _new_type:
-        #         # Change the widget text to reflect the change
-        #         self.root.wgt_txt_part_type.SetLabel(_new_type)
-        #
-        #         # Connect to the database
-        #         conn = config.sql_db.connect(config.cfg["db_location"])
-        #         crsr = conn.cursor()
-        #
-        #         # Modify the existing cell in the database for existing part number and desired column
-        #         crsr.execute("UPDATE Parts SET part_type=(?) WHERE part_num=(?) AND part_rev=(?);",
-        #                      (_new_type, self.root.part_num, self.root.part_rev))
-        #
-        #         conn.commit()
-        #         crsr.close()
-        #         conn.close()
-        #
-        #         # Color the text black after submitting the edit
-        #         self.root.wgt_txt_part_type.SetForegroundColour(global_colors.standard)
+        # Add the tags and document to the junction table
+        crsr.execute("INSERT INTO JunctionTable (name, tag_id, doc_id) "
+                     "VALUES ((?), (?), (?));",
+                     (".".join([str(_tag_id), str(_doc_id)]), _tag_id, _doc_id))
+
+        # Commit changes and close connection
+        conn.commit()
+        crsr.close()
+        conn.close()
 
         self.evt_close()
 
