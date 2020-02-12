@@ -130,7 +130,7 @@ class AddDocument(wx.Dialog):
                 event: An enter keystroke event object passed from the wx.TextCtrl
         """
 
-        if self.wgt_add_tag.GetValue() and self.wgt_add_tag.GetValue() not in self.ls_tags:
+        if self.wgt_add_tag.GetValue().strip() and self.wgt_add_tag.GetValue() not in self.ls_tags:
             self.ls_tags.append(self.wgt_add_tag.GetValue())
             self.wgt_tags.SetValue("\n".join(self.ls_tags))
 
@@ -156,13 +156,16 @@ class AddDocument(wx.Dialog):
                      "VALUES ((?), (?), (?), (?));",
                      (self.doc_name, self.wgt_title.GetValue(), os.getlogin(), str(datetime.datetime.now().timestamp())))
 
+        # Get ids of the document added and of the tags associated with it
         _doc_id = crsr.lastrowid
-        _tag_id = 1
+        _tag_ids = [self.root.parent.pane.tag_enum[tag] for tag in self.ls_tags]
 
         # Add the tags and document to the junction table
-        crsr.execute("INSERT INTO JunctionTable (name, tag_id, doc_id) "
-                     "VALUES ((?), (?), (?));",
-                     (".".join([str(_tag_id), str(_doc_id)]), _tag_id, _doc_id))
+        for _tag_id in _tag_ids:
+            print((".".join([str(_tag_id), str(_doc_id)]), _tag_id, _doc_id))
+            crsr.execute("INSERT INTO JunctionTable (name, tag_id, doc_id) "
+                         "VALUES ((?), (?), (?));",
+                         (".".join([str(_tag_id), str(_doc_id)]), _tag_id, _doc_id))
 
         # Commit changes and close connection
         conn.commit()

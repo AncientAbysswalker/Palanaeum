@@ -85,9 +85,6 @@ class PaneMain(wx.Panel):
         self.tag_enum = dict((tag, ident) for (ident, tag) in _tag_tuples)
         self.tags = [i[1] for i in _tag_tuples]
 
-        print(self.tag_enum)
-        print(self.tags)
-
         # Close connection
         crsr.close()
         conn.close()
@@ -102,19 +99,24 @@ class PaneMain(wx.Panel):
         # Resolve values as single-entry lists containing that value
         if type(add_tags) is not list: add_tags = [add_tags]
 
-        # Connect to the database
-        conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
-        crsr = conn.cursor()
+        # Only cary on if there is new tags to add
+        _new_tags = [(str(x),) for x in add_tags if str(x) not in self.tags]
+        if _new_tags:
+            # Connect to the database
+            conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+            crsr = conn.cursor()
 
-        # Modify the existing cell in the database for existing part number and desired column
-        crsr.executemany("INSERT INTO Tags (tag) "
-                         "VALUES (?);",
-                         [(str(x),) for x in add_tags if str(x) not in self.tags])
+            # Modify the existing cell in the database for existing part number and desired column
+            crsr.executemany("INSERT INTO Tags (tag) "
+                             "VALUES (?);",
+                             _new_tags)
 
-        # Commit changes and close connection
-        conn.commit()
-        crsr.close()
-        conn.close()
+            # Commit changes and close connection
+            conn.commit()
+            crsr.close()
+            conn.close()
+
+            self.reload_tags()
 
     def evt_button_no_focus(self, event):
         """Prevents focus from being called on the buttons
