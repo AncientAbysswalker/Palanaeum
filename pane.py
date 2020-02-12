@@ -34,6 +34,7 @@ class PaneMain(wx.Panel):
 
         # Search bar and bind
         self.tags = []
+        self.tag_enum = {}
         self.reload_tags()
 
         # Search bar and bind
@@ -76,11 +77,18 @@ class PaneMain(wx.Panel):
         crsr = conn.cursor()
 
         # Retrieve list of all tags from SQL database
-        crsr.execute("SELECT tag "
+        crsr.execute("SELECT id, tag "
                      "FROM Tags;")
 
-        # Write tags to self.tags and close connection
-        self.tags = [i[0] for i in crsr.fetchall()]
+        # Write tags to self.tags and define enumeration for cross-reference
+        _tag_tuples = crsr.fetchall()
+        self.tag_enum = dict((tag, ident) for (ident, tag) in _tag_tuples)
+        self.tags = [i[1] for i in _tag_tuples]
+
+        print(self.tag_enum)
+        print(self.tags)
+
+        # Close connection
         crsr.close()
         conn.close()
 
