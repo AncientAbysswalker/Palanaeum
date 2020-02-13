@@ -18,10 +18,10 @@ import fn_path
 import fn_gfx
 import autocomplete
 
-DOCTYPE = ["C+S",
-           "RM",
-           "Cat",
-           "Calc"]
+DOCTYPE = ["Codes and Specifications",
+           "Reference Materials",
+           "Catalogues",
+           "Calculators"]
 
 DISCIPLINES = ["Mech",
                "Structural",

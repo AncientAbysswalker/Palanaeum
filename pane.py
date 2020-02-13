@@ -9,6 +9,17 @@ import fn_path
 import sqlite3
 import os
 
+DISCIPLINES = {"Mech":1,
+               "Structural":2,
+               "Geotech":3,
+               "Electrical":4,
+               "Seismic":5}
+
+DOCTYPE = {"Codes and Specifications":1,
+           "Reference Materials":2,
+           "Catalogues":3,
+           "Calculators":4}
+
 
 class PaneMain(wx.Panel):
     """Master pane that contains the normal operational widgets for the application
@@ -43,6 +54,22 @@ class PaneMain(wx.Panel):
                                          style=wx.TE_PROCESS_ENTER)
         self.wgt_searchbar.Bind(wx.EVT_TEXT_ENTER, self.evt_search)
 
+        # Document Category Checkboxes
+        self.wgt_chk_category = []
+        self.szr_chk_category = wx.BoxSizer(wx.VERTICAL)
+        for category in DOCTYPE:
+            _new_checkbox = wx.CheckBox(self, label=category)
+            self.wgt_chk_category.append(_new_checkbox)
+            self.szr_chk_category.Add(_new_checkbox)
+
+        # Discipline Checkboxes
+        self.wgt_chk_disciplines = []
+        self.szr_chk_disciplines = wx.BoxSizer(wx.VERTICAL)
+        for discipline in DISCIPLINES:
+            _new_checkbox = wx.CheckBox(self, label=discipline)
+            self.wgt_chk_disciplines.append(_new_checkbox)
+            self.szr_chk_disciplines.Add(_new_checkbox)
+
         # Search bar button and bind
         btn_search = wx.BitmapButton(self,
                                      bitmap=wx.Bitmap(fn_path.concat_gui('search.png')),
@@ -59,6 +86,10 @@ class PaneMain(wx.Panel):
         szr_bar.Add(self.wgt_searchbar)
         szr_bar.AddSpacer(2)
         szr_bar.Add(btn_search)
+        szr_bar.AddSpacer(2)
+        szr_bar.Add(self.szr_chk_category)
+        szr_bar.AddSpacer(2)
+        szr_bar.Add(self.szr_chk_disciplines)
 
         # Main Sizer
         self.szr_main = wx.BoxSizer(wx.VERTICAL)
@@ -133,12 +164,92 @@ class PaneMain(wx.Panel):
                 args[0]: Either None or a button click event
         """
 
+        self.search_category()
+        self.search_discipline()
+
+        # if any([checkbox.GetValue() for checkbox in self.wgt_chk_category]):
+        #
+        #     _temp = [DOCTYPE[x.GetLabel()] for x in self.wgt_chk_category if x.GetValue()]
+        #
+        #     # Connect to the database
+        #     conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+        #     crsr = conn.cursor()
+        #
+        #     # Retrieve list of all tags from SQL database
+        #     crsr.execute("SELECT file_name "
+        #                  "FROM Documents "
+        #                  "WHERE category "
+        #                  "IN (%s);" % (",".join("?" * len(_temp))),
+        #                  _temp)
+        #
+        #     # Write tags to self.tags and define enumeration for cross-reference
+        #     print([i[0] for i in crsr.fetchall()])
+        #
+        #     # Close connection
+        #     crsr.close()
+        #     conn.close()
+        #
+        # else:
+        #     print("no boxex")
+
         # Ensure there is something in the search bar before searching
         if self.wgt_searchbar.GetValue().strip():
             self.wgt_notebook.open_parts_tab(self.wgt_searchbar.GetValue())
 
         # Empty the searchbar
         self.wgt_searchbar.SetValue("")
+
+    def search_category(self):
+        if any([checkbox.GetValue() for checkbox in self.wgt_chk_category]):
+
+            _temp = [DOCTYPE[x.GetLabel()] for x in self.wgt_chk_category if x.GetValue()]
+
+            # Connect to the database
+            conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+            crsr = conn.cursor()
+
+            # Retrieve list of all tags from SQL database
+            crsr.execute("SELECT file_name "
+                         "FROM Documents "
+                         "WHERE category "
+                         "IN (%s);" % (",".join("?" * len(_temp))),
+                         _temp)
+
+            # Write tags to self.tags and define enumeration for cross-reference
+            print([i[0] for i in crsr.fetchall()])
+
+            # Close connection
+            crsr.close()
+            conn.close()
+
+        else:
+            return
+
+    def search_discipline(self):
+        if any([checkbox.GetValue() for checkbox in self.wgt_chk_disciplines]):
+
+            _temp = [DISCIPLINES[x.GetLabel()] for x in self.wgt_chk_disciplines if x.GetValue()]
+
+            # Connect to the database
+            conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+            crsr = conn.cursor()
+
+            # Retrieve list of all tags from SQL database
+            crsr.execute("SELECT file_name "
+                         "FROM Documents "
+                         "WHERE discipline "
+                         "IN (%s);" % (",".join("?" * len(_temp))),
+                         _temp)
+
+            # Write tags to self.tags and define enumeration for cross-reference
+            print([i[0] for i in crsr.fetchall()])
+
+            # Close connection
+            crsr.close()
+            conn.close()
+
+        else:
+            return
 
 
 # class PaneLogin(wx.Panel):
