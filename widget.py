@@ -6,6 +6,8 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.ultimatelistctrl as ULC
 from math import ceil
+import os
+import subprocess
 
 import dialog
 
@@ -47,6 +49,16 @@ class DummyFileDrop(wx.FileDropTarget):
         return True
 
 
+DISCIPLINES = {1:"Mech",
+               2:"Structural",
+               3:"Geotech",
+               4:"Electrical",
+               5:"Seismic"}
+
+DOCTYPE = {1:"Codes and Specifications",
+           2:"Reference Materials",
+           3:"Catalogues",
+           4:"Calculators"}
 
 
 class CompositeLibrary(wx.Panel):
@@ -84,13 +96,14 @@ class CompositeLibrary(wx.Panel):
                                                 agwStyle = wx.LC_REPORT |
                                                            wx.LC_VRULES |
                                                            wx.LC_HRULES)
+        self.pnl_gallery.Bind(ULC.EVT_LIST_ITEM_ACTIVATED, self.open_document)
 
         info = ULC.UltimateListItem()
         info._mask = wx.LIST_MASK_TEXT | wx.LIST_MASK_IMAGE | wx.LIST_MASK_FORMAT | ULC.ULC_MASK_CHECK
         info._image = []
         info._format = 0
         info._kind = 1
-        info._text = "Artist Name"
+        info._text = "File Name"
         self.pnl_gallery.InsertColumnInfo(0, info)
 
         info = ULC.UltimateListItem()
@@ -104,26 +117,37 @@ class CompositeLibrary(wx.Panel):
         info = ULC.UltimateListItem()
         info._mask = wx.LIST_MASK_TEXT | wx.LIST_MASK_IMAGE | wx.LIST_MASK_FORMAT
         info._format = 0
-        info._text = "Genre"
+        info._text = "Category"
         # info._font = font
         info._image = []
         self.pnl_gallery.InsertColumnInfo(2, info)
 
-        self.pnl_gallery.InsertStringItem(0, "Newsboys")
-        self.pnl_gallery.SetStringItem(0, 1, "Go")
-        self.pnl_gallery.SetStringItem(0, 2, "Rock")
+        info = ULC.UltimateListItem()
+        info._mask = wx.LIST_MASK_TEXT | wx.LIST_MASK_IMAGE | wx.LIST_MASK_FORMAT
+        info._format = 0
+        info._text = "Discipline"
+        # info._font = font
+        info._image = []
+        self.pnl_gallery.InsertColumnInfo(3, info)
 
-        self.pnl_gallery.InsertStringItem(1, "Puffy")
-        self.pnl_gallery.SetStringItem(1, 1, "Bring It!")
-        self.pnl_gallery.SetStringItem(1, 2, "Pop")
-
-        self.pnl_gallery.InsertStringItem(2, "Family Force 5")
-        self.pnl_gallery.SetStringItem(2, 1, "III")
-        self.pnl_gallery.SetStringItem(2, 2, "Crunk")
+        for i, result in enumerate(self.root.search_results):
+            self.pnl_gallery.InsertStringItem(i, result[0])
+            self.pnl_gallery.SetStringItem(i, 1, result[1])
+            self.pnl_gallery.SetStringItem(i, 2, DOCTYPE[result[2]])
+            self.pnl_gallery.SetStringItem(i, 3, DISCIPLINES[result[3]])
+            #
+            # self.pnl_gallery.InsertStringItem(1, "Puffy")
+            # self.pnl_gallery.SetStringItem(1, 1, "Bring It!")
+            # self.pnl_gallery.SetStringItem(1, 2, "Pop")
+            #
+            # self.pnl_gallery.InsertStringItem(2, "Family Force 5")
+            # self.pnl_gallery.SetStringItem(2, 1, "III")
+            # self.pnl_gallery.SetStringItem(2, 2, "Crunk")
 
         self.pnl_gallery.SetColumnWidth(0, 120)
         self.pnl_gallery.SetColumnWidth(1, 120)
-        self.pnl_gallery.SetColumnWidth(2, -3)
+        self.pnl_gallery.SetColumnWidth(2, 120)
+        self.pnl_gallery.SetColumnWidth(3, -3)
 
         # choice = wx.Choice(self.pnl_gallery, -1, choices=["one", "two"])
         # index = self.pnl_gallery.InsertStringItem(9, "A widget")
@@ -144,6 +168,19 @@ class CompositeLibrary(wx.Panel):
 
         # Bind button movement to resize
         self.Bind(wx.EVT_SIZE, self.evt_resize)
+
+    def open_document(self, event):
+        """Move the button overlay when resized
+
+            Args:
+                event: A resize event object passed from the resize event
+        """
+
+        print(event.GetIndex())
+        print(event.GetText())
+        # subprocess.run(['open', r"C:\Users\JA\Desktop\Contractor Orientation Checklist.pdf"], check=True)
+        os.system(self.cmd_escape(r'C:\Users\JA\Desktop\Contractor Orientation Checklist.pdf'))
+
 
     def event_1(self, event):
         """Move the button overlay when resized
@@ -189,6 +226,10 @@ class CompositeLibrary(wx.Panel):
                 event: A focus event
         """
         pass
+
+    @staticmethod
+    def cmd_escape(text):
+        return '"' + text + '"'
 
 
 class CompositeGallery(wx.Panel):

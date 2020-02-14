@@ -80,16 +80,21 @@ class PaneMain(wx.Panel):
         # Notebook widget
         self.wgt_notebook = tab.Notebook(self)
 
+        # Restrictions sizer
+        szr_restrictions = wx.StaticBoxSizer(wx.StaticBox(self, label="Restrict Search To:"), orient=wx.HORIZONTAL)
+        szr_restrictions.Add(self.szr_chk_category)
+        szr_restrictions.AddSpacer(2)
+        szr_restrictions.Add(self.szr_chk_disciplines)
+
         # Top bar sizer
         szr_bar = wx.BoxSizer(wx.HORIZONTAL)
         szr_bar.AddSpacer(3)
         szr_bar.Add(self.wgt_searchbar)
         szr_bar.AddSpacer(2)
         szr_bar.Add(btn_search)
+        szr_bar.Add(wx.StaticText(self), proportion=1)
+        szr_bar.Add(szr_restrictions, flag=wx.RIGHT)
         szr_bar.AddSpacer(2)
-        szr_bar.Add(self.szr_chk_category)
-        szr_bar.AddSpacer(2)
-        szr_bar.Add(self.szr_chk_disciplines)
 
         # Main Sizer
         self.szr_main = wx.BoxSizer(wx.VERTICAL)
@@ -193,8 +198,8 @@ class PaneMain(wx.Panel):
         #     print("no boxex")
 
         # Ensure there is something in the search bar before searching
-        if self.wgt_searchbar.GetValue().strip():
-            self.wgt_notebook.open_parts_tab(self.wgt_searchbar.GetValue())
+        # if self.wgt_searchbar.GetValue().strip():
+        #     self.wgt_notebook.open_parts_tab(self.wgt_searchbar.GetValue(), search_results)
 
         # Empty the searchbar
         self.wgt_searchbar.SetValue("")
@@ -211,7 +216,7 @@ class PaneMain(wx.Panel):
         conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
         crsr = conn.cursor()
 
-        crsr.execute(" ".join(["SELECT file_name "
+        crsr.execute(" ".join(["SELECT file_name, title, category, discipline "
                                "FROM Documents",
                                self.opt_str("WHERE", self.min_truth(1, [_truth_cat, _truth_disc])),
                                self.opt_str("category IN (%s)" % (",".join("?" * len(_temp_cat))), _truth_cat),
@@ -220,14 +225,18 @@ class PaneMain(wx.Panel):
                      (_temp_cat + _temp_disc))
 
         # Write tags to self.tags and define enumeration for cross-reference
-        print([i[0] for i in crsr.fetchall()])
+        search_results = crsr.fetchall()
+        # print(_a)
+
+        # Ensure there is something in the search bar before searching
+        if self.wgt_searchbar.GetValue().strip():
+            self.wgt_notebook.open_parts_tab(self.wgt_searchbar.GetValue(), search_results)
 
         # Close connection
         crsr.close()
         conn.close()
 
-        # else:
-        #     return
+
 
     @staticmethod
     def opt_str(text, check):
@@ -237,32 +246,32 @@ class PaneMain(wx.Panel):
     def min_truth(count, truths):
         return sum(truths) >= count
 
-
-    def search_discipline(self):
-        if any([checkbox.GetValue() for checkbox in self.wgt_chk_disciplines]):
-
-            _temp = [DISCIPLINES[x.GetLabel()] for x in self.wgt_chk_disciplines if x.GetValue()]
-
-            # Connect to the database
-            conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
-            crsr = conn.cursor()
-
-            # Retrieve list of all tags from SQL database
-            crsr.execute("SELECT file_name "
-                         "FROM Documents "
-                         "WHERE discipline "
-                         "IN (%s);" % (",".join("?" * len(_temp))),
-                         _temp)
-
-            # Write tags to self.tags and define enumeration for cross-reference
-            print([i[0] for i in crsr.fetchall()])
-
-            # Close connection
-            crsr.close()
-            conn.close()
-
-        else:
-            return
+    #
+    # def search_discipline(self):
+    #     if any([checkbox.GetValue() for checkbox in self.wgt_chk_disciplines]):
+    #
+    #         _temp = [DISCIPLINES[x.GetLabel()] for x in self.wgt_chk_disciplines if x.GetValue()]
+    #
+    #         # Connect to the database
+    #         conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+    #         crsr = conn.cursor()
+    #
+    #         # Retrieve list of all tags from SQL database
+    #         crsr.execute("SELECT file_name "
+    #                      "FROM Documents "
+    #                      "WHERE discipline "
+    #                      "IN (%s);" % (",".join("?" * len(_temp))),
+    #                      _temp)
+    #
+    #         # Write tags to self.tags and define enumeration for cross-reference
+    #         print([i[0] for i in crsr.fetchall()])
+    #
+    #         # Close connection
+    #         crsr.close()
+    #         conn.close()
+    #
+    #     else:
+    #         return
 
 
 # class PaneLogin(wx.Panel):
