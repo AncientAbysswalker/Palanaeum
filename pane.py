@@ -165,7 +165,7 @@ class PaneMain(wx.Panel):
         """
 
         self.search_category()
-        self.search_discipline()
+        # self.search_discipline()
 
         # if any([checkbox.GetValue() for checkbox in self.wgt_chk_category]):
         #
@@ -200,30 +200,43 @@ class PaneMain(wx.Panel):
         self.wgt_searchbar.SetValue("")
 
     def search_category(self):
-        if any([checkbox.GetValue() for checkbox in self.wgt_chk_category]):
+        # if any([checkbox.GetValue() for checkbox in self.wgt_chk_category]):
+        _truth_cat = any([checkbox.GetValue() for checkbox in self.wgt_chk_category])
+        _truth_disc = any([checkbox.GetValue() for checkbox in self.wgt_chk_disciplines])
 
-            _temp = [DOCTYPE[x.GetLabel()] for x in self.wgt_chk_category if x.GetValue()]
+        _temp_cat = [DOCTYPE[x.GetLabel()] for x in self.wgt_chk_category if x.GetValue()]
+        _temp_disc = [DISCIPLINES[x.GetLabel()] for x in self.wgt_chk_disciplines if x.GetValue()]
 
-            # Connect to the database
-            conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
-            crsr = conn.cursor()
+        # Connect to the database
+        conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+        crsr = conn.cursor()
 
-            # Retrieve list of all tags from SQL database
-            crsr.execute("SELECT file_name "
-                         "FROM Documents "
-                         "WHERE category "
-                         "IN (%s);" % (",".join("?" * len(_temp))),
-                         _temp)
+        crsr.execute(" ".join(["SELECT file_name "
+                               "FROM Documents",
+                               self.opt_str("WHERE", self.min_truth(1, [_truth_cat, _truth_disc])),
+                               self.opt_str("category IN (%s)" % (",".join("?" * len(_temp_cat))), _truth_cat),
+                               self.opt_str("AND", self.min_truth(2, [_truth_cat, _truth_disc])),
+                               self.opt_str("discipline IN (%s);" % (",".join("?" * len(_temp_disc))), _truth_disc)]),
+                     (_temp_cat + _temp_disc))
 
-            # Write tags to self.tags and define enumeration for cross-reference
-            print([i[0] for i in crsr.fetchall()])
+        # Write tags to self.tags and define enumeration for cross-reference
+        print([i[0] for i in crsr.fetchall()])
 
-            # Close connection
-            crsr.close()
-            conn.close()
+        # Close connection
+        crsr.close()
+        conn.close()
 
-        else:
-            return
+        # else:
+        #     return
+
+    @staticmethod
+    def opt_str(text, check):
+        return text if check else ""
+
+    @staticmethod
+    def min_truth(count, truths):
+        return sum(truths) >= count
+
 
     def search_discipline(self):
         if any([checkbox.GetValue() for checkbox in self.wgt_chk_disciplines]):
