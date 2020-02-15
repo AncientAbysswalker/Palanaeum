@@ -9,6 +9,8 @@ import fn_path
 import sqlite3
 import os
 
+import widget
+
 DISCIPLINES = {"Mech":1,
                "Structural":2,
                "Geotech":3,
@@ -47,6 +49,7 @@ class PaneMain(wx.Panel):
         self.tags = []
         self.tag_enum = {}
         self.reload_tags()
+        self.show_restrictions = False
 
         # Search bar and bind
         self.wgt_searchbar = wx.TextCtrl(self,
@@ -54,21 +57,21 @@ class PaneMain(wx.Panel):
                                          style=wx.TE_PROCESS_ENTER)
         self.wgt_searchbar.Bind(wx.EVT_TEXT_ENTER, self.evt_search)
 
-        # Document Category Checkboxes
-        self.wgt_chk_category = []
-        self.szr_chk_category = wx.BoxSizer(wx.VERTICAL)
-        for category in DOCTYPE:
-            _new_checkbox = wx.CheckBox(self, label=category)
-            self.wgt_chk_category.append(_new_checkbox)
-            self.szr_chk_category.Add(_new_checkbox)
-
-        # Discipline Checkboxes
-        self.wgt_chk_disciplines = []
-        self.szr_chk_disciplines = wx.BoxSizer(wx.VERTICAL)
-        for discipline in DISCIPLINES:
-            _new_checkbox = wx.CheckBox(self, label=discipline)
-            self.wgt_chk_disciplines.append(_new_checkbox)
-            self.szr_chk_disciplines.Add(_new_checkbox)
+        # # Document Category Checkboxes
+        # self.wgt_chk_category = []
+        # self.szr_chk_category = wx.BoxSizer(wx.VERTICAL)
+        # for category in DOCTYPE:
+        #     _new_checkbox = wx.CheckBox(self, label=category)
+        #     self.wgt_chk_category.append(_new_checkbox)
+        #     self.szr_chk_category.Add(_new_checkbox)
+        #
+        # # Discipline Checkboxes
+        # self.wgt_chk_disciplines = []
+        # self.szr_chk_disciplines = wx.BoxSizer(wx.VERTICAL)
+        # for discipline in DISCIPLINES:
+        #     _new_checkbox = wx.CheckBox(self, label=discipline)
+        #     self.wgt_chk_disciplines.append(_new_checkbox)
+        #     self.szr_chk_disciplines.Add(_new_checkbox)
 
         # Search bar button and bind
         btn_search = wx.BitmapButton(self,
@@ -80,11 +83,25 @@ class PaneMain(wx.Panel):
         # Notebook widget
         self.wgt_notebook = tab.Notebook(self)
 
+        # Search-in sizer
+        _b = wx.StaticBox(self, label="Search for text in:")
+        # _a.Bind(wx.EVT_KEY_DOWN, self.toggle_restrictions)
+        szr_search = wx.StaticBoxSizer(_b, orient=wx.HORIZONTAL)
+        # szr_search.Add(self.szr_chk_category)
+        # szr_search.AddSpacer(2)
+        # szr_search.Add(self.szr_chk_disciplines)
+
         # Restrictions sizer
-        szr_restrictions = wx.StaticBoxSizer(wx.StaticBox(self, label="Restrict Search To:"), orient=wx.HORIZONTAL)
-        szr_restrictions.Add(self.szr_chk_category)
-        szr_restrictions.AddSpacer(2)
-        szr_restrictions.Add(self.szr_chk_disciplines)
+        # _a = wx.StaticBox(self, label="Restrict search to:")
+        # # _a.Bind(wx.EVT_KEY_DOWN, self.toggle_restrictions)
+        # szr_restrictions = wx.StaticBoxSizer(_a, orient=wx.HORIZONTAL)
+        # szr_restrictions.Add(self.szr_chk_category)
+        # szr_restrictions.AddSpacer(2)
+        # szr_restrictions.Add(self.szr_chk_disciplines)
+        self._a = widget.Restrictions(self)
+        self._a.Bind(wx.EVT_LEFT_DOWN, self._a.evt_click_header)
+        # self._a.Bind(wx.EVT_LEAVE_WINDOW, self._a.toggle_restrictions)
+        self._a.SetMinSize((300, -1))
 
         # Top bar sizer
         szr_bar = wx.BoxSizer(wx.HORIZONTAL)
@@ -93,7 +110,9 @@ class PaneMain(wx.Panel):
         szr_bar.AddSpacer(2)
         szr_bar.Add(btn_search)
         szr_bar.Add(wx.StaticText(self), proportion=1)
-        szr_bar.Add(szr_restrictions, flag=wx.RIGHT)
+        szr_bar.Add(szr_search, flag=wx.RIGHT)
+        szr_bar.Add(wx.StaticText(self), proportion=1)
+        szr_bar.Add(self._a, flag=wx.RIGHT)
         szr_bar.AddSpacer(2)
 
         # Main Sizer
@@ -104,6 +123,8 @@ class PaneMain(wx.Panel):
         self.szr_main.Add(self.wgt_notebook, proportion=1, flag=wx.EXPAND)
 
         self.SetSizer(self.szr_main)
+
+        self.Layout()
 
     def reload_tags(self):
         """Loads a list of available tags from the SQL database and populates to self.tags"""
@@ -169,6 +190,7 @@ class PaneMain(wx.Panel):
                 args[0]: Either None or a button click event
         """
 
+        # self.toggle_restrictions()
         self.search_category()
         # self.search_discipline()
 
@@ -206,11 +228,11 @@ class PaneMain(wx.Panel):
 
     def search_category(self):
         # if any([checkbox.GetValue() for checkbox in self.wgt_chk_category]):
-        _truth_cat = any([checkbox.GetValue() for checkbox in self.wgt_chk_category])
-        _truth_disc = any([checkbox.GetValue() for checkbox in self.wgt_chk_disciplines])
+        _truth_cat = any([checkbox.GetValue() for checkbox in self._a.wgt_chk_category])
+        _truth_disc = any([checkbox.GetValue() for checkbox in self._a.wgt_chk_disciplines])
 
-        _temp_cat = [DOCTYPE[x.GetLabel()] for x in self.wgt_chk_category if x.GetValue()]
-        _temp_disc = [DISCIPLINES[x.GetLabel()] for x in self.wgt_chk_disciplines if x.GetValue()]
+        _temp_cat = [DOCTYPE[x.GetLabel()] for x in self._a.wgt_chk_category if x.GetValue()]
+        _temp_disc = [DISCIPLINES[x.GetLabel()] for x in self._a.wgt_chk_disciplines if x.GetValue()]
 
         # Connect to the database
         conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
@@ -236,7 +258,11 @@ class PaneMain(wx.Panel):
         crsr.close()
         conn.close()
 
-
+    def toggle_restrictions(self, *args):
+        for each in self.wgt_chk_disciplines + self.wgt_chk_category:
+            each.Show() if self.show_restrictions else each.Hide()
+        self.Layout()
+        self.show_restrictions = not self.show_restrictions
 
     @staticmethod
     def opt_str(text, check):

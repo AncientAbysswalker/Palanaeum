@@ -49,6 +49,8 @@ class DummyFileDrop(wx.FileDropTarget):
         return True
 
 
+# reverse_map = dict(reversed(item) for item in forward_map.items())
+
 DISCIPLINES = {1:"Mech",
                2:"Structural",
                3:"Geotech",
@@ -59,6 +61,17 @@ DOCTYPE = {1:"Codes and Specifications",
            2:"Reference Materials",
            3:"Catalogues",
            4:"Calculators"}
+
+DISCIPLINES2 = {"Mech":1,
+               "Structural":2,
+               "Geotech":3,
+               "Electrical":4,
+               "Seismic":5}
+
+DOCTYPE2 = {"Codes and Specifications":1,
+           "Reference Materials":2,
+           "Catalogues":3,
+           "Calculators":4}
 
 
 class CompositeLibrary(wx.Panel):
@@ -179,8 +192,10 @@ class CompositeLibrary(wx.Panel):
         print(event.GetIndex())
         print(event.GetText())
         # subprocess.run(['open', r"C:\Users\JA\Desktop\Contractor Orientation Checklist.pdf"], check=True)
-        os.system(self.cmd_escape(r'C:\Users\JA\Desktop\Contractor Orientation Checklist.pdf'))
-
+        # os.system(self.cmd_escape(r'C:\Users\JA\Desktop\Contractor Orientation Checklist.pdf'))
+        os.startfile(self.cmd_escape(r'C:\Users\JA\Desktop\Contractor Orientation Checklist.pdf'))
+        # subprocess.run(self.cmd_escape(r'C:\Users\JA\Desktop\Contractor Orientation Checklist.pdf'), )
+        print(5)
 
     def event_1(self, event):
         """Move the button overlay when resized
@@ -230,6 +245,79 @@ class CompositeLibrary(wx.Panel):
     @staticmethod
     def cmd_escape(text):
         return '"' + text + '"'
+
+
+class Restrictions(wx.Panel):
+    """Master pane that contains the normal operational widgets for the application
+
+        Class Variables:
+            bar_size (int): Size (height) of the top ribbon with the searchbar
+
+        Args:
+            parent (ptr): Reference to the wx.object this panel belongs to
+
+        Attributes:
+            parent (ptr): Reference to the wx.object this panel belongs to
+    """
+
+    def __init__(self, parent, *args, **kwargs):
+        """Constructor"""
+        wx.Panel.__init__(self, parent)
+        #self.SetDoubleBuffered(True)  # Remove odd effects at main switch to this pane after login
+
+        self.parent = parent
+        self.show_restrictions = False
+
+        # Document Category Checkboxes
+        self.wgt_chk_category = []
+        self.szr_chk_category = wx.BoxSizer(wx.VERTICAL)
+        for category in DOCTYPE2:
+            _new_checkbox = wx.CheckBox(self, label=category)
+            self.wgt_chk_category.append(_new_checkbox)
+            self.szr_chk_category.Add(_new_checkbox)
+            _new_checkbox.Hide()
+
+        # Discipline Checkboxes
+        self.wgt_chk_disciplines = []
+        self.szr_chk_disciplines = wx.BoxSizer(wx.VERTICAL)
+        for discipline in DISCIPLINES2:
+            _new_checkbox = wx.CheckBox(self, label=discipline)
+            self.wgt_chk_disciplines.append(_new_checkbox)
+            self.szr_chk_disciplines.Add(_new_checkbox)
+            _new_checkbox.Hide()
+
+
+        # Restrictions sizer
+        _a = wx.StaticBox(self, label="Restrict search to:")
+        # _a.Bind(wx.EVT_KEY_DOWN, self.toggle_restrictions)
+        szr_restrictions = wx.StaticBoxSizer(_a, orient=wx.HORIZONTAL)
+        szr_restrictions.Add(self.szr_chk_category)
+        szr_restrictions.AddSpacer(2)
+        szr_restrictions.Add(self.szr_chk_disciplines)
+
+        self.SetSizer(szr_restrictions)
+
+    def evt_click_header(self, event):
+        if event.GetPosition()[1] < 20:
+            self.toggle_restrictions()
+
+    def toggle_restrictions(self):
+        self.show_restrictions = not self.show_restrictions
+        for each in self.wgt_chk_disciplines + self.wgt_chk_category:
+            each.Show() if self.show_restrictions else each.Hide()
+        self.parent.Layout()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class CompositeGallery(wx.Panel):
