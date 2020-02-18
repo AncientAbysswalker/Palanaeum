@@ -121,8 +121,8 @@ class CompositeLibrary(wx.Panel):
         for i, result in enumerate(self.root.search_results):
             self.pnl_gallery.InsertStringItem(i, result[0])
             self.pnl_gallery.SetStringItem(i, 1, result[1])
-            self.pnl_gallery.SetStringItem(i, 2, self.parent.parent.pane.map_id_cat[result[2]])
-            self.pnl_gallery.SetStringItem(i, 3, self.parent.parent.pane.map_id_disc[result[3]])
+            self.pnl_gallery.SetStringItem(i, 2, self.parent.parent.pane.id_to_category[result[2]])
+            self.pnl_gallery.SetStringItem(i, 3, self.parent.parent.pane.id_to_discipline[result[3]])
             #
             # self.pnl_gallery.InsertStringItem(1, "Puffy")
             # self.pnl_gallery.SetStringItem(1, 1, "Bring It!")
@@ -270,7 +270,7 @@ class Restrictions(wx.Panel):
         self.szr_chk_category = wx.StaticBoxSizer(wgt_staticbox_category, wx.VERTICAL)
         wgt_staticbox_category.Hide()
 
-        for category in self.parent.map_cat_id:
+        for category in self.parent.category_to_id:
             _new_checkbox = wx.CheckBox(self, label=category)
             self.wgt_chk_category.append(_new_checkbox)
             self.szr_chk_category.Add(_new_checkbox)
@@ -283,7 +283,7 @@ class Restrictions(wx.Panel):
         self.szr_chk_disciplines = wx.StaticBoxSizer(wgt_staticbox_disciplines, wx.VERTICAL)
         wgt_staticbox_disciplines.Hide()
 
-        for discipline in self.parent.map_disc_id:
+        for discipline in self.parent.discipline_to_id:
             _new_checkbox = wx.CheckBox(self, label=discipline)
             self.wgt_chk_disciplines.append(_new_checkbox)
             self.szr_chk_disciplines.Add(_new_checkbox)
@@ -344,7 +344,7 @@ class Rest2(wx.Panel):
         # Document Category Checkboxes
         self.wgt_chk_category = []
         self.szr_chk_category = wx.BoxSizer(wx.VERTICAL)
-        for category in self.parent.map_cat_id:
+        for category in self.parent.category_to_id:
             _new_checkbox = wx.CheckBox(self, label=category)
             self.wgt_chk_category.append(_new_checkbox)
             self.szr_chk_category.Add(_new_checkbox)
@@ -353,7 +353,7 @@ class Rest2(wx.Panel):
         # Discipline Checkboxes
         self.wgt_chk_disciplines = []
         self.szr_chk_disciplines = wx.BoxSizer(wx.VERTICAL)
-        for discipline in self.parent.map_disc_id:
+        for discipline in self.parent.discipline_to_id:
             _new_checkbox = wx.CheckBox(self, label=discipline)
             self.wgt_chk_disciplines.append(_new_checkbox)
             self.szr_chk_disciplines.Add(_new_checkbox)

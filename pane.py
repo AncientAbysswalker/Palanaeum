@@ -45,36 +45,20 @@ class PaneMain(wx.Panel):
 
         self.parent = parent
 
-        # Search bar and bind
-        self.tags = []
-        self.tag_enum = {}
+        # Load tags and the mapping of tag to id
+        self.ls_tags = []
+        self.tag_to_id = {}
         self.reload_tags()
-        self.show_restrictions = False
 
-        self.map_id_disc, self.map_disc_id = self.load_disciplines()
-        self.map_id_cat, self.map_cat_id = self.load_categories()
+        # Mappings between id and discipline and id and category on their respective tables
+        self.id_to_discipline, self.discipline_to_id = self.load_disciplines()
+        self.id_to_category, self.category_to_id = self.load_categories()
 
         # Search bar and bind
         self.wgt_searchbar = wx.TextCtrl(self,
                                          size=(PaneMain.bar_size*10, PaneMain.bar_size),
                                          style=wx.TE_PROCESS_ENTER)
         self.wgt_searchbar.Bind(wx.EVT_TEXT_ENTER, self.evt_search)
-
-        # # Document Category Checkboxes
-        # self.wgt_chk_category = []
-        # self.szr_chk_category = wx.BoxSizer(wx.VERTICAL)
-        # for category in DOCTYPE:
-        #     _new_checkbox = wx.CheckBox(self, label=category)
-        #     self.wgt_chk_category.append(_new_checkbox)
-        #     self.szr_chk_category.Add(_new_checkbox)
-        #
-        # # Discipline Checkboxes
-        # self.wgt_chk_disciplines = []
-        # self.szr_chk_disciplines = wx.BoxSizer(wx.VERTICAL)
-        # for discipline in DISCIPLINES:
-        #     _new_checkbox = wx.CheckBox(self, label=discipline)
-        #     self.wgt_chk_disciplines.append(_new_checkbox)
-        #     self.szr_chk_disciplines.Add(_new_checkbox)
 
         # Search bar button and bind
         btn_search = wx.BitmapButton(self,
@@ -86,50 +70,30 @@ class PaneMain(wx.Panel):
         # Notebook widget
         self.wgt_notebook = tab.Notebook(self)
 
-        # Search-in sizer
-        _b = wx.StaticBox(self, label="Search for text in:")
-        # _a.Bind(wx.EVT_KEY_DOWN, self.toggle_restrictions)
-        szr_search = wx.StaticBoxSizer(_b, orient=wx.HORIZONTAL)
-        # szr_search.Add(self.szr_chk_category)
-        # szr_search.AddSpacer(2)
-        # szr_search.Add(self.szr_chk_disciplines)
-
         # Restrictions sizer
-        # _a = wx.StaticBox(self, label="Restrict search to:")
-        # # _a.Bind(wx.EVT_KEY_DOWN, self.toggle_restrictions)
-        # szr_restrictions = wx.StaticBoxSizer(_a, orient=wx.HORIZONTAL)
-        # szr_restrictions.Add(self.szr_chk_category)
-        # szr_restrictions.AddSpacer(2)
-        # szr_restrictions.Add(self.szr_chk_disciplines)
         self.wgt_restrictions = widget.Restrictions(self)
         self.wgt_restrictions.Bind(wx.EVT_LEFT_DOWN, self.wgt_restrictions.evt_click_header)
-        # self._a.Bind(wx.EVT_ENTER_WINDOW, self._a.evt_enter_widget)
-        # self._a.Bind(wx.EVT_LEAVE_WINDOW, self._a.evt_leave_widget)
-
-        # self._a.Bind(wx.EVT_LEAVE_WINDOW, self._a.toggle_restrictions)
         self.wgt_restrictions.SetMinSize((500, -1))
 
         # Top bar sizer
-        szr_bar = wx.BoxSizer(wx.HORIZONTAL)
-        szr_bar.AddSpacer(3)
-        szr_bar.Add(self.wgt_searchbar)
-        szr_bar.AddSpacer(2)
-        szr_bar.Add(btn_search)
-        szr_bar.Add(wx.StaticText(self), proportion=1)
-        szr_bar.Add(szr_search, flag=wx.RIGHT)
-        szr_bar.Add(wx.StaticText(self), proportion=1)
-        szr_bar.Add(self.wgt_restrictions, flag=wx.RIGHT)
-        szr_bar.AddSpacer(2)
+        szr_top_bar = wx.BoxSizer(wx.HORIZONTAL)
+        szr_top_bar.AddSpacer(3)
+        szr_top_bar.Add(self.wgt_searchbar)
+        szr_top_bar.AddSpacer(2)
+        szr_top_bar.Add(btn_search)
+        szr_top_bar.Add(wx.StaticText(self), proportion=1)
+        szr_top_bar.Add(self.wgt_restrictions, flag=wx.RIGHT)
+        szr_top_bar.AddSpacer(2)
 
         # Main Sizer
         self.szr_main = wx.BoxSizer(wx.VERTICAL)
-        self.szr_main.Add(szr_bar, flag=wx.EXPAND)
+        self.szr_main.Add(szr_top_bar, flag=wx.EXPAND)
         self.szr_main.AddSpacer(1)
         self.szr_main.Add(wx.StaticLine(self, style=wx.LI_HORIZONTAL), flag=wx.EXPAND)
         self.szr_main.Add(self.wgt_notebook, proportion=1, flag=wx.EXPAND)
 
+        # Set sizer and refresh layout
         self.SetSizer(self.szr_main)
-
         self.Layout()
 
     def load_disciplines(self):
@@ -189,8 +153,8 @@ class PaneMain(wx.Panel):
 
         # Write tags to self.tags and define enumeration for cross-reference
         _tag_tuples = crsr.fetchall()
-        self.tag_enum = dict((tag, ident) for (ident, tag) in _tag_tuples)
-        self.tags = [i[1] for i in _tag_tuples]
+        self.tag_to_id = dict((tag, ident) for (ident, tag) in _tag_tuples)
+        self.ls_tags = [i[1] for i in _tag_tuples]
 
         # Close connection
         crsr.close()
@@ -207,7 +171,7 @@ class PaneMain(wx.Panel):
         if type(add_tags) is not list: add_tags = [add_tags]
 
         # Only cary on if there is new tags to add
-        _new_tags = [(str(x),) for x in add_tags if str(x) not in self.tags]
+        _new_tags = [(str(x),) for x in add_tags if str(x) not in self.ls_tags]
         if _new_tags:
             # Connect to the database
             conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
@@ -281,8 +245,8 @@ class PaneMain(wx.Panel):
         _truth_cat = any([checkbox.GetValue() for checkbox in self.wgt_restrictions.wgt_chk_category])
         _truth_disc = any([checkbox.GetValue() for checkbox in self.wgt_restrictions.wgt_chk_disciplines])
 
-        _temp_cat = [self.map_cat_id[x.GetLabel()] for x in self.wgt_restrictions.wgt_chk_category if x.GetValue()]
-        _temp_disc = [self.map_disc_id[x.GetLabel()] for x in self.wgt_restrictions.wgt_chk_disciplines if x.GetValue()]
+        _temp_cat = [self.category_to_id[x.GetLabel()] for x in self.wgt_restrictions.wgt_chk_category if x.GetValue()]
+        _temp_disc = [self.discipline_to_id[x.GetLabel()] for x in self.wgt_restrictions.wgt_chk_disciplines if x.GetValue()]
 
         # Connect to the database
         conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
