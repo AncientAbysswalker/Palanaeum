@@ -145,15 +145,12 @@ class PaneMain(wx.Panel):
 
         # Write tags to self.tags and define enumeration for cross-reference
         _discipline_tuples = crsr.fetchall()
-        print(_discipline_tuples)
         discipline_to_id = dict((discipline, ident) for (ident, discipline) in _discipline_tuples)
         id_to_discipline = dict((ident, discipline) for (ident, discipline) in _discipline_tuples)
 
         # Close connection
         crsr.close()
         conn.close()
-
-        print(id_to_discipline, discipline_to_id)
 
         return id_to_discipline, discipline_to_id
 
@@ -170,15 +167,12 @@ class PaneMain(wx.Panel):
 
         # Write tags to self.tags and define enumeration for cross-reference
         _category_tuples = crsr.fetchall()
-        print(_category_tuples)
         category_to_id = dict((category, ident) for (ident, category) in _category_tuples)
         id_to_category = dict((ident, category) for (ident, category) in _category_tuples)
 
         # Close connection
         crsr.close()
         conn.close()
-
-        print(id_to_category, category_to_id)
 
         return id_to_category, category_to_id
 
@@ -306,9 +300,16 @@ class PaneMain(wx.Panel):
         search_results = crsr.fetchall()
         # print(_a)
 
+        search_string = self.wgt_searchbar.GetValue().strip()
+
+        print(search_results)
+
         # Ensure there is something in the search bar before searching
-        if self.wgt_searchbar.GetValue().strip():
-            self.wgt_notebook.open_parts_tab(self.wgt_searchbar.GetValue(), search_results)
+        if search_string:
+
+            new_search = [s for s in search_results if search_string in s[0]]
+
+            self.wgt_notebook.open_parts_tab(search_string, new_search)
 
         # Close connection
         crsr.close()
