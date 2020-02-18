@@ -49,31 +49,6 @@ class DummyFileDrop(wx.FileDropTarget):
         return True
 
 
-# reverse_map = dict(reversed(item) for item in forward_map.items())
-
-# DISCIPLINES = {1:"Mech",
-#                2:"Structural",
-#                3:"Geotech",
-#                4:"Electrical",
-#                5:"Seismic"}
-
-# DOCTYPE = {1:"Codes and Specifications",
-#            2:"Reference Materials",
-#            3:"Catalogues",
-#            4:"Calculators"}
-
-# DISCIPLINES2 = {"Mech":1,
-#                "Structural":2,
-#                "Geotech":3,
-#                "Electrical":4,
-#                "Seismic":5}
-
-# DOCTYPE2 = {"Codes and Specifications":1,
-#            "Reference Materials":2,
-#            "Catalogues":3,
-#            "Calculators":4}
-
-
 class CompositeLibrary(wx.Panel):
     """Custom widget that overlays an "add image" button on top of the WidgetGallery custom widget
 
@@ -268,6 +243,104 @@ class Restrictions(wx.Panel):
         self.parent = parent
         self.show_restrictions = False
 
+        # Search for text in Checkboxes
+        # _a = wx.StaticBox(self, label="Search Restrictions (Click to Expand):")
+        # _a.Bind(wx.EVT_KEY_DOWN, self.toggle_restrictions)
+        # szr_restrictions = wx.StaticBoxSizer(_a, orient=wx.HORIZONTAL)
+
+        self.wgt_ls_collapseable = []
+
+        self.wgt_chk_searchin = []
+        wgt_staticbox_searchin = wx.StaticBox(self, label="Search for text in:")
+        self.wgt_ls_collapseable.append(wgt_staticbox_searchin)
+        self.szr_chk_searchin = wx.StaticBoxSizer(wgt_staticbox_searchin, wx.VERTICAL)
+        wgt_staticbox_searchin.Hide()
+
+        for search_field in ["File Name", "Document Title"]:
+            _new_checkbox = wx.CheckBox(self, label=search_field)
+            _new_checkbox.SetValue(True)
+            self.wgt_chk_searchin.append(_new_checkbox)
+            self.szr_chk_searchin.Add(_new_checkbox)
+            _new_checkbox.Hide()
+
+        # Document Category Checkboxes
+        self.wgt_chk_category = []
+        wgt_staticbox_category = wx.StaticBox(self, label="Restrict to categories:")
+        self.wgt_ls_collapseable.append(wgt_staticbox_category)
+        self.szr_chk_category = wx.StaticBoxSizer(wgt_staticbox_category, wx.VERTICAL)
+        wgt_staticbox_category.Hide()
+
+        for category in self.parent.map_cat_id:
+            _new_checkbox = wx.CheckBox(self, label=category)
+            self.wgt_chk_category.append(_new_checkbox)
+            self.szr_chk_category.Add(_new_checkbox)
+            _new_checkbox.Hide()
+
+        # Discipline Checkboxes
+        self.wgt_chk_disciplines = []
+        wgt_staticbox_disciplines = wx.StaticBox(self, label="Restrict to disciplines:")
+        self.wgt_ls_collapseable.append(wgt_staticbox_disciplines)
+        self.szr_chk_disciplines = wx.StaticBoxSizer(wgt_staticbox_disciplines, wx.VERTICAL)
+        wgt_staticbox_disciplines.Hide()
+
+        for discipline in self.parent.map_disc_id:
+            _new_checkbox = wx.CheckBox(self, label=discipline)
+            self.wgt_chk_disciplines.append(_new_checkbox)
+            self.szr_chk_disciplines.Add(_new_checkbox)
+            _new_checkbox.Hide()
+
+
+        # Restrictions sizer
+        _a = wx.StaticBox(self, label="Search Restrictions (Click to Expand):")
+        # _a.Bind(wx.EVT_KEY_DOWN, self.toggle_restrictions)
+        szr_restrictions = wx.StaticBoxSizer(_a, orient=wx.HORIZONTAL)
+        szr_restrictions.Add(self.szr_chk_searchin, proportion=1, flag=wx.EXPAND)
+        szr_restrictions.AddSpacer(2)
+        szr_restrictions.Add(self.szr_chk_category, proportion=1, flag=wx.EXPAND)
+        szr_restrictions.AddSpacer(2)
+        szr_restrictions.Add(self.szr_chk_disciplines, proportion=1, flag=wx.EXPAND)
+
+        self.SetSizer(szr_restrictions)
+
+    def evt_click_header(self, event):
+        if event.GetPosition()[1] < 20:
+            self.toggle_restrictions()
+
+    def toggle_restrictions(self):
+        self.show_restrictions = not self.show_restrictions
+        for each in self.wgt_chk_searchin + self.wgt_chk_disciplines + self.wgt_chk_category + self.wgt_ls_collapseable:
+            each.Show() if self.show_restrictions else each.Hide()
+        self.parent.Layout()
+
+    def evt_enter_widget(self, event):
+        self.toggle_restrictions()
+
+    def evt_leave_widget(self, event):
+        if self.HitTest(event.Position) == wx.HT_WINDOW_OUTSIDE:
+            self.toggle_restrictions()
+
+
+class Rest2(wx.Panel):
+    """Master pane that contains the normal operational widgets for the application
+
+        Class Variables:
+            bar_size (int): Size (height) of the top ribbon with the searchbar
+
+        Args:
+            parent (ptr): Reference to the wx.object this panel belongs to
+
+        Attributes:
+            parent (ptr): Reference to the wx.object this panel belongs to
+    """
+
+    def __init__(self, parent, *args, **kwargs):
+        """Constructor"""
+        wx.Panel.__init__(self, parent)
+        #self.SetDoubleBuffered(True)  # Remove odd effects at main switch to this pane after login
+
+        self.parent = parent
+        self.show_restrictions = False
+
         # Document Category Checkboxes
         self.wgt_chk_category = []
         self.szr_chk_category = wx.BoxSizer(wx.VERTICAL)
@@ -313,9 +386,6 @@ class Restrictions(wx.Panel):
     def evt_leave_widget(self, event):
         if self.HitTest(event.Position) == wx.HT_WINDOW_OUTSIDE:
             self.toggle_restrictions()
-
-
-
 
 
 

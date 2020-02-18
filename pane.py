@@ -107,7 +107,7 @@ class PaneMain(wx.Panel):
         # self._a.Bind(wx.EVT_LEAVE_WINDOW, self._a.evt_leave_widget)
 
         # self._a.Bind(wx.EVT_LEAVE_WINDOW, self._a.toggle_restrictions)
-        self._a.SetMinSize((300, -1))
+        self._a.SetMinSize((500, -1))
 
         # Top bar sizer
         szr_bar = wx.BoxSizer(wx.HORIZONTAL)
