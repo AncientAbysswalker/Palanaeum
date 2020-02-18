@@ -51,27 +51,27 @@ class DummyFileDrop(wx.FileDropTarget):
 
 # reverse_map = dict(reversed(item) for item in forward_map.items())
 
-DISCIPLINES = {1:"Mech",
-               2:"Structural",
-               3:"Geotech",
-               4:"Electrical",
-               5:"Seismic"}
+# DISCIPLINES = {1:"Mech",
+#                2:"Structural",
+#                3:"Geotech",
+#                4:"Electrical",
+#                5:"Seismic"}
 
-DOCTYPE = {1:"Codes and Specifications",
-           2:"Reference Materials",
-           3:"Catalogues",
-           4:"Calculators"}
+# DOCTYPE = {1:"Codes and Specifications",
+#            2:"Reference Materials",
+#            3:"Catalogues",
+#            4:"Calculators"}
 
-DISCIPLINES2 = {"Mech":1,
-               "Structural":2,
-               "Geotech":3,
-               "Electrical":4,
-               "Seismic":5}
+# DISCIPLINES2 = {"Mech":1,
+#                "Structural":2,
+#                "Geotech":3,
+#                "Electrical":4,
+#                "Seismic":5}
 
-DOCTYPE2 = {"Codes and Specifications":1,
-           "Reference Materials":2,
-           "Catalogues":3,
-           "Calculators":4}
+# DOCTYPE2 = {"Codes and Specifications":1,
+#            "Reference Materials":2,
+#            "Catalogues":3,
+#            "Calculators":4}
 
 
 class CompositeLibrary(wx.Panel):
@@ -146,8 +146,8 @@ class CompositeLibrary(wx.Panel):
         for i, result in enumerate(self.root.search_results):
             self.pnl_gallery.InsertStringItem(i, result[0])
             self.pnl_gallery.SetStringItem(i, 1, result[1])
-            self.pnl_gallery.SetStringItem(i, 2, DOCTYPE[result[2]])
-            self.pnl_gallery.SetStringItem(i, 3, DISCIPLINES[result[3]])
+            self.pnl_gallery.SetStringItem(i, 2, self.parent.parent.pane.map_id_cat[result[2]])
+            self.pnl_gallery.SetStringItem(i, 3, self.parent.parent.pane.map_id_disc[result[3]])
             #
             # self.pnl_gallery.InsertStringItem(1, "Puffy")
             # self.pnl_gallery.SetStringItem(1, 1, "Bring It!")
@@ -271,7 +271,7 @@ class Restrictions(wx.Panel):
         # Document Category Checkboxes
         self.wgt_chk_category = []
         self.szr_chk_category = wx.BoxSizer(wx.VERTICAL)
-        for category in DOCTYPE2:
+        for category in self.parent.map_cat_id:
             _new_checkbox = wx.CheckBox(self, label=category)
             self.wgt_chk_category.append(_new_checkbox)
             self.szr_chk_category.Add(_new_checkbox)
@@ -280,7 +280,7 @@ class Restrictions(wx.Panel):
         # Discipline Checkboxes
         self.wgt_chk_disciplines = []
         self.szr_chk_disciplines = wx.BoxSizer(wx.VERTICAL)
-        for discipline in DISCIPLINES2:
+        for discipline in self.parent.map_disc_id:
             _new_checkbox = wx.CheckBox(self, label=discipline)
             self.wgt_chk_disciplines.append(_new_checkbox)
             self.szr_chk_disciplines.Add(_new_checkbox)
@@ -306,6 +306,13 @@ class Restrictions(wx.Panel):
         for each in self.wgt_chk_disciplines + self.wgt_chk_category:
             each.Show() if self.show_restrictions else each.Hide()
         self.parent.Layout()
+
+    def evt_enter_widget(self, event):
+        self.toggle_restrictions()
+
+    def evt_leave_widget(self, event):
+        if self.HitTest(event.Position) == wx.HT_WINDOW_OUTSIDE:
+            self.toggle_restrictions()
 
 
 

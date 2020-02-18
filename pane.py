@@ -11,16 +11,16 @@ import os
 
 import widget
 
-DISCIPLINES = {"Mech":1,
-               "Structural":2,
-               "Geotech":3,
-               "Electrical":4,
-               "Seismic":5}
+# DISCIPLINES = {"Mech":1,
+#                "Structural":2,
+#                "Geotech":3,
+#                "Electrical":4,
+#                "Seismic":5}
 
-DOCTYPE = {"Codes and Specifications":1,
-           "Reference Materials":2,
-           "Catalogues":3,
-           "Calculators":4}
+# DOCTYPE = {"Codes and Specifications":1,
+#            "Reference Materials":2,
+#            "Catalogues":3,
+#            "Calculators":4}
 
 
 class PaneMain(wx.Panel):
@@ -50,6 +50,9 @@ class PaneMain(wx.Panel):
         self.tag_enum = {}
         self.reload_tags()
         self.show_restrictions = False
+
+        self.map_id_disc, self.map_disc_id = self.load_disciplines()
+        self.map_id_cat, self.map_cat_id = self.load_categories()
 
         # Search bar and bind
         self.wgt_searchbar = wx.TextCtrl(self,
@@ -100,6 +103,9 @@ class PaneMain(wx.Panel):
         # szr_restrictions.Add(self.szr_chk_disciplines)
         self._a = widget.Restrictions(self)
         self._a.Bind(wx.EVT_LEFT_DOWN, self._a.evt_click_header)
+        # self._a.Bind(wx.EVT_ENTER_WINDOW, self._a.evt_enter_widget)
+        # self._a.Bind(wx.EVT_LEAVE_WINDOW, self._a.evt_leave_widget)
+
         # self._a.Bind(wx.EVT_LEAVE_WINDOW, self._a.toggle_restrictions)
         self._a.SetMinSize((300, -1))
 
@@ -125,6 +131,56 @@ class PaneMain(wx.Panel):
         self.SetSizer(self.szr_main)
 
         self.Layout()
+
+    def load_disciplines(self):
+        """Loads a dictionary and the reverse dictionary for disciplines and their id in the SQL database"""
+
+        # Connect to the database
+        conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+        crsr = conn.cursor()
+
+        # Retrieve list of all tags from SQL database
+        crsr.execute("SELECT id, discipline "
+                     "FROM Disciplines;")
+
+        # Write tags to self.tags and define enumeration for cross-reference
+        _discipline_tuples = crsr.fetchall()
+        print(_discipline_tuples)
+        discipline_to_id = dict((discipline, ident) for (ident, discipline) in _discipline_tuples)
+        id_to_discipline = dict((ident, discipline) for (ident, discipline) in _discipline_tuples)
+
+        # Close connection
+        crsr.close()
+        conn.close()
+
+        print(id_to_discipline, discipline_to_id)
+
+        return id_to_discipline, discipline_to_id
+
+    def load_categories(self):
+        """Loads a dictionary and the reverse dictionary for disciplines and their id in the SQL database"""
+
+        # Connect to the database
+        conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+        crsr = conn.cursor()
+
+        # Retrieve list of all tags from SQL database
+        crsr.execute("SELECT id, category "
+                     "FROM Categories;")
+
+        # Write tags to self.tags and define enumeration for cross-reference
+        _category_tuples = crsr.fetchall()
+        print(_category_tuples)
+        category_to_id = dict((category, ident) for (ident, category) in _category_tuples)
+        id_to_category = dict((ident, category) for (ident, category) in _category_tuples)
+
+        # Close connection
+        crsr.close()
+        conn.close()
+
+        print(id_to_category, category_to_id)
+
+        return id_to_category, category_to_id
 
     def reload_tags(self):
         """Loads a list of available tags from the SQL database and populates to self.tags"""
@@ -231,8 +287,8 @@ class PaneMain(wx.Panel):
         _truth_cat = any([checkbox.GetValue() for checkbox in self._a.wgt_chk_category])
         _truth_disc = any([checkbox.GetValue() for checkbox in self._a.wgt_chk_disciplines])
 
-        _temp_cat = [DOCTYPE[x.GetLabel()] for x in self._a.wgt_chk_category if x.GetValue()]
-        _temp_disc = [DISCIPLINES[x.GetLabel()] for x in self._a.wgt_chk_disciplines if x.GetValue()]
+        _temp_cat = [self.map_cat_id[x.GetLabel()] for x in self._a.wgt_chk_category if x.GetValue()]
+        _temp_disc = [self.map_disc_id[x.GetLabel()] for x in self._a.wgt_chk_disciplines if x.GetValue()]
 
         # Connect to the database
         conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
