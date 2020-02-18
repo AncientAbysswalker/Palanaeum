@@ -101,13 +101,13 @@ class PaneMain(wx.Panel):
         # szr_restrictions.Add(self.szr_chk_category)
         # szr_restrictions.AddSpacer(2)
         # szr_restrictions.Add(self.szr_chk_disciplines)
-        self._a = widget.Restrictions(self)
-        self._a.Bind(wx.EVT_LEFT_DOWN, self._a.evt_click_header)
+        self.wgt_restrictions = widget.Restrictions(self)
+        self.wgt_restrictions.Bind(wx.EVT_LEFT_DOWN, self.wgt_restrictions.evt_click_header)
         # self._a.Bind(wx.EVT_ENTER_WINDOW, self._a.evt_enter_widget)
         # self._a.Bind(wx.EVT_LEAVE_WINDOW, self._a.evt_leave_widget)
 
         # self._a.Bind(wx.EVT_LEAVE_WINDOW, self._a.toggle_restrictions)
-        self._a.SetMinSize((500, -1))
+        self.wgt_restrictions.SetMinSize((500, -1))
 
         # Top bar sizer
         szr_bar = wx.BoxSizer(wx.HORIZONTAL)
@@ -118,7 +118,7 @@ class PaneMain(wx.Panel):
         szr_bar.Add(wx.StaticText(self), proportion=1)
         szr_bar.Add(szr_search, flag=wx.RIGHT)
         szr_bar.Add(wx.StaticText(self), proportion=1)
-        szr_bar.Add(self._a, flag=wx.RIGHT)
+        szr_bar.Add(self.wgt_restrictions, flag=wx.RIGHT)
         szr_bar.AddSpacer(2)
 
         # Main Sizer
@@ -278,11 +278,11 @@ class PaneMain(wx.Panel):
 
     def search_category(self):
         # if any([checkbox.GetValue() for checkbox in self.wgt_chk_category]):
-        _truth_cat = any([checkbox.GetValue() for checkbox in self._a.wgt_chk_category])
-        _truth_disc = any([checkbox.GetValue() for checkbox in self._a.wgt_chk_disciplines])
+        _truth_cat = any([checkbox.GetValue() for checkbox in self.wgt_restrictions.wgt_chk_category])
+        _truth_disc = any([checkbox.GetValue() for checkbox in self.wgt_restrictions.wgt_chk_disciplines])
 
-        _temp_cat = [self.map_cat_id[x.GetLabel()] for x in self._a.wgt_chk_category if x.GetValue()]
-        _temp_disc = [self.map_disc_id[x.GetLabel()] for x in self._a.wgt_chk_disciplines if x.GetValue()]
+        _temp_cat = [self.map_cat_id[x.GetLabel()] for x in self.wgt_restrictions.wgt_chk_category if x.GetValue()]
+        _temp_disc = [self.map_disc_id[x.GetLabel()] for x in self.wgt_restrictions.wgt_chk_disciplines if x.GetValue()]
 
         # Connect to the database
         conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
@@ -304,10 +304,20 @@ class PaneMain(wx.Panel):
 
         print(search_results)
 
+        _ot = [x.IsChecked() for x in self.wgt_restrictions.wgt_chk_searchin]
+
+        print(555, _ot)
+
         # Ensure there is something in the search bar before searching
         if search_string:
 
-            new_search = [s for s in search_results if search_string in s[0]]
+            # _fliptest = []
+            # if 0 in _ot:
+            #     _fliptest.append(s[0])
+            # if 1 in _ot:
+            #     _fliptest.append(s[1])
+
+            new_search = [s for s in search_results if ((search_string in s[0] if _ot[0] else False) or (search_string in s[1] if _ot[1] else False))] #search_string in (s[0] if 0 in _ot else []) or (s[1] if 1 in _ot else [])]
 
             self.wgt_notebook.open_parts_tab(search_string, new_search)
 
@@ -315,11 +325,11 @@ class PaneMain(wx.Panel):
         crsr.close()
         conn.close()
 
-    def toggle_restrictions(self, *args):
-        for each in self.wgt_chk_disciplines + self.wgt_chk_category:
-            each.Show() if self.show_restrictions else each.Hide()
-        self.Layout()
-        self.show_restrictions = not self.show_restrictions
+    # def toggle_restrictions(self, *args):
+    #     for each in self.wgt_chk_disciplines + self.wgt_chk_category:
+    #         each.Show() if self.show_restrictions else each.Hide()
+    #     self.Layout()
+    #     self.show_restrictions = not self.show_restrictions
 
     @staticmethod
     def opt_str(text, check):
