@@ -18,7 +18,7 @@ class Notebook(wx.Notebook):
     """Notebook class that contains various Tab-type classes within itself
 
             Args:
-                pane (ref): Reference to the parent wx.object
+                pane (ref): Reference to the parent wx.object pane
 
             Attributes:
                 user (str): The logged-in user. Currently hard-coded to "demo"
@@ -58,7 +58,7 @@ class Notebook(wx.Notebook):
         # if _check:
         # If there is not yet a tab for this part number then create one, otherwise redirect to the existing
         if part_num not in [_tab.part_num for _tab in self.open_tabs]:
-            new_tab = TabPartInfo(self, part_num, search_results)
+            new_tab = TabPartInfo(self, self.pane, part_num, search_results)
             self.open_tabs.append(new_tab)
             self.AddPage(new_tab, part_num)
 
@@ -106,26 +106,27 @@ class TabPartInfo(wx.Panel):
             btn_rev_size (int): Size (height) of the revision toggle buttons
 
         Args:
-            parent (ref): Reference to the parent wx.object
+            notebook (ref): Reference to the parent wx.object
             part_num (str): The part number that the tab loads the relevant information for
             part_rev (str): The revision number that the tab loads the relevant information for
 
         Attributes:
-            parent (ref): Reference to the parent wx.object
+            notebook (ref): Reference to the parent wx.object
             part_num (str): The part number that the tab loads the relevant information for
             part_rev (str): The revision number that the tab loads the relevant information for
     """
 
     btn_rev_size = 26
 
-    def __init__(self, parent, part_num, search_results):
+    def __init__(self, notebook, pane, part_num, search_results):
         """Constructor"""
-        wx.Panel.__init__(self, parent, size=(0, 0))  # Needs size parameter to remove black-square
+        wx.Panel.__init__(self, notebook, size=(0, 0))  # Needs size parameter to remove black-square
         self.SetDoubleBuffered(True)  # Remove slight strobing on tab switch
         self.SetCursor(wx.Cursor(wx.CURSOR_ARROW))  # Ensure that edit cursor does not show by default
 
         # Variable initialization
-        self.parent = parent
+        self.notebook = notebook
+        self.pane = pane
         self.part_num = part_num
         self.search_results = search_results
         # self.part_rev = part_rev
@@ -205,7 +206,7 @@ class TabPartInfo(wx.Panel):
         # self.szr_notes.Add(self.wgt_notes, proportion=1, flag=wx.ALL | wx.EXPAND)
 
         # Gallery widget and sizer
-        self.wgt_gallery = widget.CompositeLibrary(self, self)
+        self.wgt_gallery = widget.CompositeLibrary(self, pane)
         self.szr_gallery = wx.StaticBoxSizer(wx.StaticBox(self, label='Image Gallery'), orient=wx.VERTICAL)
         self.szr_gallery.Add(self.wgt_gallery, proportion=1, flag=wx.ALL | wx.EXPAND)
 

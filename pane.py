@@ -30,20 +30,21 @@ class PaneMain(wx.Panel):
             bar_size (int): Size (height) of the top ribbon with the searchbar
 
         Args:
-            parent (ptr): Reference to the wx.object this panel belongs to
+            frame (ptr): Reference to the wx.frame this panel belongs to
 
         Attributes:
-            parent (ptr): Reference to the wx.object this panel belongs to
+            frame (ptr): Reference to the wx.frame this panel belongs to
     """
 
     bar_size = 25
 
-    def __init__(self, parent):
+    def __init__(self, frame):
         """Constructor"""
-        wx.Panel.__init__(self, parent)
+        wx.Panel.__init__(self, frame)
         self.SetDoubleBuffered(True)  # Remove odd effects at main switch to this pane after login
 
-        self.parent = parent
+        # Parental inheritance
+        self.frame = frame
 
         # Load tags and the mapping of tag to id
         self.ls_tags = []
@@ -206,36 +207,6 @@ class PaneMain(wx.Panel):
 
         # self.toggle_restrictions()
         self.search_category()
-        # self.search_discipline()
-
-        # if any([checkbox.GetValue() for checkbox in self.wgt_chk_category]):
-        #
-        #     _temp = [DOCTYPE[x.GetLabel()] for x in self.wgt_chk_category if x.GetValue()]
-        #
-        #     # Connect to the database
-        #     conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
-        #     crsr = conn.cursor()
-        #
-        #     # Retrieve list of all tags from SQL database
-        #     crsr.execute("SELECT file_name "
-        #                  "FROM Documents "
-        #                  "WHERE category "
-        #                  "IN (%s);" % (",".join("?" * len(_temp))),
-        #                  _temp)
-        #
-        #     # Write tags to self.tags and define enumeration for cross-reference
-        #     print([i[0] for i in crsr.fetchall()])
-        #
-        #     # Close connection
-        #     crsr.close()
-        #     conn.close()
-        #
-        # else:
-        #     print("no boxex")
-
-        # Ensure there is something in the search bar before searching
-        # if self.wgt_searchbar.GetValue().strip():
-        #     self.wgt_notebook.open_parts_tab(self.wgt_searchbar.GetValue(), search_results)
 
         # Empty the searchbar
         self.wgt_searchbar.SetValue("")
@@ -275,12 +246,6 @@ class PaneMain(wx.Panel):
         # Ensure there is something in the search bar before searching
         if search_string:
 
-            # _fliptest = []
-            # if 0 in _ot:
-            #     _fliptest.append(s[0])
-            # if 1 in _ot:
-            #     _fliptest.append(s[1])
-
             new_search = [s for s in search_results if ((search_string in s[0] if _ot[0] else False) or (search_string in s[1] if _ot[1] else False))] #search_string in (s[0] if 0 in _ot else []) or (s[1] if 1 in _ot else [])]
 
             self.wgt_notebook.open_parts_tab(search_string, new_search)
@@ -289,12 +254,6 @@ class PaneMain(wx.Panel):
         crsr.close()
         conn.close()
 
-    # def toggle_restrictions(self, *args):
-    #     for each in self.wgt_chk_disciplines + self.wgt_chk_category:
-    #         each.Show() if self.show_restrictions else each.Hide()
-    #     self.Layout()
-    #     self.show_restrictions = not self.show_restrictions
-
     @staticmethod
     def opt_str(text, check):
         return text if check else ""
@@ -302,62 +261,3 @@ class PaneMain(wx.Panel):
     @staticmethod
     def min_truth(count, truths):
         return sum(truths) >= count
-
-    #
-    # def search_discipline(self):
-    #     if any([checkbox.GetValue() for checkbox in self.wgt_chk_disciplines]):
-    #
-    #         _temp = [DISCIPLINES[x.GetLabel()] for x in self.wgt_chk_disciplines if x.GetValue()]
-    #
-    #         # Connect to the database
-    #         conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
-    #         crsr = conn.cursor()
-    #
-    #         # Retrieve list of all tags from SQL database
-    #         crsr.execute("SELECT file_name "
-    #                      "FROM Documents "
-    #                      "WHERE discipline "
-    #                      "IN (%s);" % (",".join("?" * len(_temp))),
-    #                      _temp)
-    #
-    #         # Write tags to self.tags and define enumeration for cross-reference
-    #         print([i[0] for i in crsr.fetchall()])
-    #
-    #         # Close connection
-    #         crsr.close()
-    #         conn.close()
-    #
-    #     else:
-    #         return
-
-
-# class PaneLogin(wx.Panel):
-#     """Master pane that deals with login behaviour for the application.
-#
-#         Args:
-#             parent (ptr): Reference to the wx.object this panel belongs to
-#             sizer_landing (ptr): Reference to the sizer (of the parent) the landing pane belongs to
-#             pane_landing (ptr): Reference to the landing pane
-#
-#         Attributes:
-#             parent (ptr): Reference to the wx.object this panel belongs to
-#     """
-#
-#     def __init__(self, parent, sizer_landing, pane_landing):
-#         """Constructor"""
-#         wx.Panel.__init__(self, parent)
-#         self.SetDoubleBuffered(True)  # Remove slight strobing on failed login
-#
-#         self.parent = parent
-#
-#         # Widget that controls user login auth - currently set to debug (no auth) for testing and dev
-#         login_panel = login.LoginDebug(self, sizer_landing, pane_landing)
-#
-#         # Main Sizer
-#         sizer_main = wx.BoxSizer(wx.VERTICAL)
-#         sizer_main.AddStretchSpacer()
-#         sizer_main.Add(login_panel, flag=wx.CENTER)
-#         sizer_main.AddStretchSpacer()
-#
-#         # Set main sizer
-#         self.SetSizer(sizer_main)

@@ -56,22 +56,22 @@ class CompositeLibrary(wx.Panel):
             btn_size (int): Size of the "add image" button in the overlay
 
         Args:
-            parent (ref): Reference to the parent wx.object
-            root (ref): Reference to the root parts tab
+            tab (ref): Reference to the parent wx.object
+            pane (ref): Reference to the root parts tab
 
         Attributes:
-            parent (ref): Reference to the parent wx.object
-            root (ref): Reference to the root parts tab
+            tab (ref): Reference to the parent wx.object
+            pane (ref): Reference to the root parts tab
     """
 
     btn_size = 25
 
-    def __init__(self, parent, root):
+    def __init__(self, tab, pane):
         """Constructor"""
-        wx.Panel.__init__(self, parent)
+        wx.Panel.__init__(self, tab)
 
-        self.parent = parent
-        self.root = root
+        self.tab = tab
+        self.pane = pane
 
         # Button overlay and binding
         self.btn_add_image = wx.BitmapButton(self,
@@ -118,11 +118,11 @@ class CompositeLibrary(wx.Panel):
         info._image = []
         self.pnl_gallery.InsertColumnInfo(3, info)
 
-        for i, result in enumerate(self.root.search_results):
+        for i, result in enumerate(self.tab.search_results):
             self.pnl_gallery.InsertStringItem(i, result[0])
             self.pnl_gallery.SetStringItem(i, 1, result[1])
-            self.pnl_gallery.SetStringItem(i, 2, self.parent.parent.pane.id_to_category[result[2]])
-            self.pnl_gallery.SetStringItem(i, 3, self.parent.parent.pane.id_to_discipline[result[3]])
+            self.pnl_gallery.SetStringItem(i, 2, self.pane.id_to_category[result[2]])
+            self.pnl_gallery.SetStringItem(i, 3, self.pane.id_to_discipline[result[3]])
             #
             # self.pnl_gallery.InsertStringItem(1, "Puffy")
             # self.pnl_gallery.SetStringItem(1, 1, "Bring It!")
@@ -189,7 +189,7 @@ class CompositeLibrary(wx.Panel):
         """
 
         for document in file_paths:
-            _dlg = dialog.AddDocument(self, self.root, document)
+            _dlg = dialog.AddDocument(self, self.pane, document)
             _dlg.ShowModal()
             #if _dlg: _dlg.DestroyLater()
 
