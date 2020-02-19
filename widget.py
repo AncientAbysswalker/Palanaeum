@@ -162,8 +162,13 @@ class CompositeLibrary(wx.Panel):
                 event: A double-click event object passed from the list control
         """
 
-        print(event.GetIndex())
-        print(event.GetText())
+        # print(event.GetIndex())
+        # print(event.GetText())
+        file_name, title, id_category, id_discipline = (self.root_tab.search_results[event.GetIndex()])
+        category = self.root_pane.id_to_category[id_category]
+        discipline = self.root_pane.id_to_discipline[id_discipline]
+        print(os.path.join("basepath", category, discipline, file_name))
+        # print(self.root_tab.category)
         # subprocess.run(['open', r"C:\Users\JA\Desktop\Contractor Orientation Checklist.pdf"], check=True)
         # os.system(self.cmd_escape(r'C:\Users\JA\Desktop\Contractor Orientation Checklist.pdf'))
         os.startfile(self.cmd_escape(r'C:\Users\JA\Desktop\Contractor Orientation Checklist.pdf'))
@@ -251,8 +256,6 @@ class Restrictions(wx.Panel):
             _new_checkbox.SetValue(True)
             self.wgt_ls_chk_searchin.append(_new_checkbox)
             self.szr_chk_searchin.Add(_new_checkbox)
-            _new_checkbox.Hide()
-        wgt_staticbox_searchin.Hide()
 
         # Subwidget for "Restrict to categories:" and its sizer
         self.wgt_ls_chk_category = []
@@ -263,8 +266,6 @@ class Restrictions(wx.Panel):
             _new_checkbox = wx.CheckBox(self, label=category)
             self.wgt_ls_chk_category.append(_new_checkbox)
             self.szr_chk_category.Add(_new_checkbox)
-            _new_checkbox.Hide()
-        wgt_staticbox_category.Hide()
 
         # Subwidget for "Restrict to disciplines:" and its sizer
         self.wgt_ls_chk_disciplines = []
@@ -275,14 +276,20 @@ class Restrictions(wx.Panel):
             _new_checkbox = wx.CheckBox(self, label=discipline)
             self.wgt_ls_chk_disciplines.append(_new_checkbox)
             self.szr_chk_disciplines.Add(_new_checkbox)
-            _new_checkbox.Hide()
-        wgt_staticbox_disciplines.Hide()
 
         # List of subwidget sizers to collapse
         self.wgt_ls_collapseable = []
         self.wgt_ls_collapseable.append(wgt_staticbox_searchin)
         self.wgt_ls_collapseable.append(wgt_staticbox_category)
         self.wgt_ls_collapseable.append(wgt_staticbox_disciplines)
+
+        # If we do not desire to show the widget initially, hide all involved
+        if not self.show_restrictions:
+            for to_hide in self.wgt_ls_collapseable + \
+                           self.wgt_ls_chk_disciplines + \
+                           self.wgt_ls_chk_category + \
+                           self.wgt_ls_chk_searchin:
+                to_hide.Hide()
 
         # Main sizer
         szr_main = wx.StaticBoxSizer(wx.StaticBox(self, label="Search Restrictions (Click to Expand):"), 
