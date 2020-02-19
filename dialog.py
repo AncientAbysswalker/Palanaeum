@@ -44,32 +44,38 @@ class AddDocument(wx.Dialog):
 
         Args:
             parent (ref): Reference to the parent wx.object
-            root (ref): Reference to the root parts tab
+            root_pane (ref): Reference to the root parts tab
             old_type (str): The value of the part's "type" before editing
 
         Attributes:
             parent (ref): Reference to the parent wx.object
-            root (ref): Reference to the root parts tab
+            root_pane (ref): Reference to the root parts tab
             old_type (str): The value of the part's "type" before editing
     """
 
-    def __init__(self, parent, root, doc_path):
+    def __init__(self, parent, root_pane, doc_path):
         """Constructor"""
         super().__init__(parent)
 
         self.parent = parent
-        self.root = root
+        self.root_pane = root_pane
         self.doc_path = doc_path
         self.doc_name = os.path.basename(doc_path)
-        self.ls_tags = []
+        self.ls_tags = list(self.root_pane.tag_to_id.keys())
+        self.ls_category = list(self.root_pane.category_to_id.keys())
+        self.ls_discipline = list(self.root_pane.discipline_to_id.keys())
+
+        self.ls_add_tags = []
 
         # Refresh tags list
-        self.root.parent.pane.reload_tags()
+        self.root_pane.reload_tags()
+
+
 
         # Type selection dropdown, with bind and sizer
         self.wgt_filename = wx.StaticText(self, label=self.doc_name, style=wx.ALIGN_CENTER)
-        self.wgt_drop_doctype = wx.ComboBox(self, choices=DOCTYPE, style=wx.CB_READONLY)
-        self.wgt_drop_discipline = wx.ComboBox(self, choices=DISCIPLINES, style=wx.CB_READONLY)
+        self.wgt_drop_doctype = wx.ComboBox(self, choices=self.ls_category, style=wx.CB_READONLY)
+        self.wgt_drop_discipline = wx.ComboBox(self, choices=self.ls_discipline, style=wx.CB_READONLY)
         self.wgt_drop_l3 = wx.ComboBox(self, choices=L3_DISP, style=wx.CB_READONLY)
         szr_drop = wx.StaticBoxSizer(wx.StaticBox(self, label="Select the type for this part to fall under"), orient=wx.HORIZONTAL)
         szr_drop.Add(self.wgt_drop_doctype, proportion=1, flag=wx.ALL, border=5)
@@ -77,7 +83,7 @@ class AddDocument(wx.Dialog):
         szr_drop.Add(self.wgt_drop_l3, proportion=1, flag=wx.ALL, border=5)
 
         # Tag addition box and bind
-        self.wgt_add_tag = autocomplete.LowercaseTextCtrl(self, completer=self.root.parent.pane.tags, style=wx.TE_PROCESS_ENTER)
+        self.wgt_add_tag = autocomplete.LowercaseTextCtrl(self, completer=self.ls_tags, style=wx.TE_PROCESS_ENTER)
         # self.wgt_add_tag = wx.TextCtrl(self,
         #                                # size=(PaneMain.bar_size * 10, PaneMain.bar_size),
         #                                style=wx.TE_PROCESS_ENTER)
@@ -87,7 +93,7 @@ class AddDocument(wx.Dialog):
         self.wgt_title = wx.TextCtrl(self, style=wx.EXPAND)
 
         # Added PDFs display pane
-        self.wgt_tags = wx.TextCtrl(self, size=(50, -1), style=wx.TE_READONLY | wx.TE_MULTILINE | wx.EXPAND)
+        self.wgt_tags = wx.TextCtrl(self, size=(500, -1), style=wx.TE_READONLY | wx.TE_MULTILINE | wx.EXPAND)
 
         # Set initial selection
         # self.wgt_drop_doctype.SetValue(self.old_type)
@@ -118,7 +124,7 @@ class AddDocument(wx.Dialog):
         self.SetSizer(szr_main)
 
         # Set size and title
-        self.SetSize((500, 360))
+        self.SetSize((1000, 360))
         self.SetTitle("Change the 'type' for this component")
 
         self.Bind(wx.EVT_CLOSE, self.evt_close)
@@ -130,9 +136,9 @@ class AddDocument(wx.Dialog):
                 event: An enter keystroke event object passed from the wx.TextCtrl
         """
 
-        if self.wgt_add_tag.GetValue().strip() and self.wgt_add_tag.GetValue() not in self.ls_tags:
-            self.ls_tags.append(self.wgt_add_tag.GetValue())
-            self.wgt_tags.SetValue("\n".join(self.ls_tags))
+        if self.wgt_add_tag.GetValue().strip() and self.wgt_add_tag.GetValue() not in self.ls_add_tags:
+            self.ls_add_tags.append(self.wgt_add_tag.GetValue())
+            self.wgt_tags.SetValue("\n".join(self.ls_add_tags))
 
         self.wgt_add_tag.SetValue("")
 
@@ -145,20 +151,20 @@ class AddDocument(wx.Dialog):
         # self.evt_add_tag(event)
 
         # Add any new tags
-        self.root.parent.pane.add_tags(self.ls_tags)
+        self.root_pane.add_tags(self.ls_add_tags)
 
         # Connect to the database
         conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
         crsr = conn.cursor()
 
         # Add the new document to the library
-        crsr.execute("INSERT INTO Documents (file_name, title, user, time_added) "
-                     "VALUES ((?), (?), (?), (?));",
-                     (self.doc_name, self.wgt_title.GetValue(), os.getlogin(), str(datetime.datetime.now().timestamp())))
+        crsr.execute("INSERT INTO Documents (file_name, title, category, discipline, user, time_added) "
+                     "VALUES ((?), (?), (?), (?), (?), (?));",
+                     (self.doc_name, self.wgt_title.GetValue(), self.root_pane.category_to_id[self.wgt_drop_doctype.GetValue()], self.root_pane.discipline_to_id[self.wgt_drop_discipline.GetValue()], os.getlogin(), str(datetime.datetime.now().timestamp())))
 
         # Get ids of the document added and of the tags associated with it
         _doc_id = crsr.lastrowid
-        _tag_ids = [self.root.parent.pane.tag_enum[tag] for tag in self.ls_tags]
+        _tag_ids = [self.root_pane.tag_to_id[tag] for tag in self.ls_tags]
 
         # Add the tags and document to the junction table
         for _tag_id in _tag_ids:
