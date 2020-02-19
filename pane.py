@@ -2,26 +2,13 @@
 """This module defines panes - master panels that act as direct children of the progenitor frame"""
 
 import wx
-
-import login
-import tab
-import fn_path
 import sqlite3
 import os
 
+import fn_path
+
 import widget
-
-# DISCIPLINES = {"Mech":1,
-#                "Structural":2,
-#                "Geotech":3,
-#                "Electrical":4,
-#                "Seismic":5}
-
-# DOCTYPE = {"Codes and Specifications":1,
-#            "Reference Materials":2,
-#            "Catalogues":3,
-#            "Calculators":4}
-
+import tab
 
 class PaneMain(wx.Panel):
     """Master pane that contains the normal operational widgets for the application
@@ -248,7 +235,7 @@ class PaneMain(wx.Panel):
 
             new_search = [s for s in search_results if ((search_string in s[0] if _ot[0] else False) or (search_string in s[1] if _ot[1] else False))] #search_string in (s[0] if 0 in _ot else []) or (s[1] if 1 in _ot else [])]
 
-            self.wgt_notebook.open_parts_tab(search_string, new_search)
+            self.wgt_notebook.open_search_tab(search_string, new_search)
 
         # Close connection
         crsr.close()

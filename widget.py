@@ -7,13 +7,12 @@ import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.ultimatelistctrl as ULC
 from math import ceil
 import os
-import subprocess
-
-import dialog
 
 import config
 import fn_path
 import fn_gfx
+
+import dialog
 
 
 class DummyFileDrop(wx.FileDropTarget):
@@ -1050,7 +1049,7 @@ class CompositeAssemblies(wx.Panel):
 
         # Get the index of the clicked item, and open a new parts tab, based on part_num and part_rev
         _index = event.GetSelection()
-        self.root.parent.open_parts_tab(*self.root.helper_wgt_sub[_index], wx.GetKeyState(wx.WXK_SHIFT))
+        self.root.parent.open_search_tab(*self.root.helper_wgt_sub[_index], wx.GetKeyState(wx.WXK_SHIFT))
 
         # Deselect the clicked entry of the list box
         event.GetEventObject().SetSelection(wx.NOT_FOUND)
@@ -1064,7 +1063,7 @@ class CompositeAssemblies(wx.Panel):
 
         # Get the index of the clicked item, and open a new parts tab, based on part_num and part_rev
         _index = event.GetSelection()
-        self.root.parent.open_parts_tab(*self.root.helper_wgt_super[_index], wx.GetKeyState(wx.WXK_SHIFT))
+        self.root.parent.open_search_tab(*self.root.helper_wgt_super[_index], wx.GetKeyState(wx.WXK_SHIFT))
 
         # Deselect the clicked entry of the list box
         event.GetEventObject().SetSelection(wx.NOT_FOUND)
