@@ -30,8 +30,10 @@ class Notebook(wx.Notebook):
         # Instance Variables
         self.user = "demo"
 
-        # Set the list of open panels to an empty list
+        # Set the list of open panels to an empty list. Create a dummy tab.
         self.open_tabs = []
+        self.open_search_tab("", [])
+
 
     def open_search_tab(self, query, search_results, opt_stay=False):
         """Open a new tab using the provided part number and revision
@@ -43,7 +45,7 @@ class Notebook(wx.Notebook):
         """
 
         # If there is not yet a tab for this part number then create one, otherwise redirect to the existing
-        if query not in [_tab.part_num for _tab in self.open_tabs]:
+        if query not in [_tab.query for _tab in self.open_tabs]:
             new_tab = TabSearchQuery(self, self.root_pane, query, search_results)
             self.open_tabs.append(new_tab)
             self.AddPage(new_tab, query)

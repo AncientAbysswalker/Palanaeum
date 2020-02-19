@@ -199,12 +199,12 @@ class PaneMain(wx.Panel):
         self.wgt_searchbar.SetValue("")
 
     def search_category(self):
-        # if any([checkbox.GetValue() for checkbox in self.wgt_chk_category]):
-        _truth_cat = any([checkbox.GetValue() for checkbox in self.wgt_restrictions.wgt_chk_category])
-        _truth_disc = any([checkbox.GetValue() for checkbox in self.wgt_restrictions.wgt_chk_disciplines])
+        # if any([checkbox.GetValue() for checkbox in self.wgt_ls_chk_category]):
+        _truth_cat = any([checkbox.GetValue() for checkbox in self.wgt_restrictions.wgt_ls_chk_category])
+        _truth_disc = any([checkbox.GetValue() for checkbox in self.wgt_restrictions.wgt_ls_chk_disciplines])
 
-        _temp_cat = [self.category_to_id[x.GetLabel()] for x in self.wgt_restrictions.wgt_chk_category if x.GetValue()]
-        _temp_disc = [self.discipline_to_id[x.GetLabel()] for x in self.wgt_restrictions.wgt_chk_disciplines if x.GetValue()]
+        _temp_cat = [self.category_to_id[x.GetLabel()] for x in self.wgt_restrictions.wgt_ls_chk_category if x.GetValue()]
+        _temp_disc = [self.discipline_to_id[x.GetLabel()] for x in self.wgt_restrictions.wgt_ls_chk_disciplines if x.GetValue()]
 
         # Connect to the database
         conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
@@ -224,11 +224,7 @@ class PaneMain(wx.Panel):
 
         search_string = self.wgt_searchbar.GetValue().strip()
 
-        print(search_results)
-
-        _ot = [x.IsChecked() for x in self.wgt_restrictions.wgt_chk_searchin]
-
-        print(555, _ot)
+        _ot = [x.IsChecked() for x in self.wgt_restrictions.wgt_ls_chk_searchin]
 
         # Ensure there is something in the search bar before searching
         if search_string:
