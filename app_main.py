@@ -29,19 +29,6 @@ class WindowFrame(wx.Frame):
         self.status = self.CreateStatusBar(1)
         self.status.SetStatusText("Written by Ancient Abysswalker")
 
-        # Disable menu bar for the moment as I don't have a need for it
-        # self.menubar = wx.MenuBar()
-        # menu_file = wx.Menu()
-        # menu_edit = wx.Menu()
-        # menu_help = wx.Menu()
-        # menu_file.Append(wx.NewId(), "New", "Creates A new file")
-        # append_item = menu_file.Append(wx.NewId(), "Add ID", "Add an ID")
-        # self.Bind(wx.EVT_MENU, self.evt_on_add, append_item)
-        # self.menubar.Append(menu_file, "File")
-        # self.menubar.Append(menu_edit, "Edit")
-        # self.menubar.Append(menu_help, "Help")
-        # self.SetMenuBar(self.menubar)
-
         # Set icon
         self.SetIcon(wx.Icon(fn_path.concat_gui('icon.png')))
 
@@ -49,9 +36,6 @@ class WindowFrame(wx.Frame):
         self.SetMinSize((700, 500))
         self.SetSizer(self.szr_main)
         self.Show()
-
-    # def evt_on_add(self, event):
-    #     pass
 
 
 if __name__ == '__main__':

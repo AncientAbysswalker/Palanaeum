@@ -2,7 +2,6 @@
 """This module defines custom dialog boxes called upon at various instances"""
 
 import wx
-# import wx.richtext as wxr
 import os
 import hashlib
 import shutil
@@ -47,7 +46,7 @@ class AddDocument(wx.Dialog):
         self.ls_add_tags = []
 
         # Refresh tags list
-        self.root_pane.reload_tags()
+        self.root_pane.load_tags()
 
 
 
