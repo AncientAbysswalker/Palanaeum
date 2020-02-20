@@ -77,6 +77,11 @@ class AddDocument(wx.Dialog):
         self.wgt_drop_doctype = wx.ComboBox(self, choices=self.ls_category, style=wx.CB_READONLY)
         self.wgt_drop_discipline = wx.ComboBox(self, choices=self.ls_discipline, style=wx.CB_READONLY)
         self.wgt_drop_l3 = wx.ComboBox(self, choices=L3_DISP, style=wx.CB_READONLY)
+
+        self.wgt_drop_doctype.Bind(wx.EVT_COMBOBOX_CLOSEUP, self.evt_set_level3)
+        self.wgt_drop_discipline.Bind(wx.EVT_COMBOBOX_CLOSEUP, self.evt_set_level3)
+
+
         szr_drop = wx.StaticBoxSizer(wx.StaticBox(self, label="Select the type for this part to fall under"), orient=wx.HORIZONTAL)
         szr_drop.Add(self.wgt_drop_doctype, proportion=1, flag=wx.ALL, border=5)
         szr_drop.Add(self.wgt_drop_discipline, proportion=1, flag=wx.ALL, border=5)
@@ -128,6 +133,34 @@ class AddDocument(wx.Dialog):
         self.SetTitle("Change the 'type' for this component")
 
         self.Bind(wx.EVT_CLOSE, self.evt_close)
+
+    def evt_set_level3(self, event):
+        """Execute when adding a tag to the list of tags for this document
+
+            Args:
+                event: An enter keystroke event object passed from the wx.TextCtrl
+        """
+
+        if self.wgt_drop_discipline.GetValue() and self.wgt_drop_doctype.GetValue():
+
+            # Connect to the database
+            conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+            crsr = conn.cursor()
+
+            # Retrieve list of all tags from SQL database
+            crsr.execute("SELECT level3 "
+                         "FROM Level3 "
+                         "WHERE discipline_id=(?) "
+                         "AND category_id=(?);",
+                         (self.root_pane.discipline_to_id[self.wgt_drop_discipline.GetValue()],
+                          self.root_pane.category_to_id[self.wgt_drop_doctype.GetValue()]))
+
+            # Set possible options for level 3 dropdown
+            self.wgt_drop_l3.SetItems([i[0] for i in crsr.fetchall()])
+
+            # Close connection
+            crsr.close()
+            conn.close()
 
     def evt_add_tag(self, event):
         """Execute when adding a tag to the list of tags for this document
