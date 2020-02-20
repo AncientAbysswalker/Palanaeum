@@ -74,18 +74,18 @@ class AddDocument(wx.Dialog):
 
         # Type selection dropdown, with bind and sizer
         self.wgt_filename = wx.StaticText(self, label=self.doc_name, style=wx.ALIGN_CENTER)
-        self.wgt_drop_doctype = wx.ComboBox(self, choices=self.ls_category, style=wx.CB_READONLY)
+        self.wgt_drop_category = wx.ComboBox(self, choices=self.ls_category, style=wx.CB_READONLY)
         self.wgt_drop_discipline = wx.ComboBox(self, choices=self.ls_discipline, style=wx.CB_READONLY)
-        self.wgt_drop_l3 = wx.ComboBox(self, choices=L3_DISP, style=wx.CB_READONLY)
+        self.wgt_drop_level3 = wx.ComboBox(self, choices=L3_DISP, style=wx.CB_READONLY)
 
-        self.wgt_drop_doctype.Bind(wx.EVT_COMBOBOX_CLOSEUP, self.evt_set_level3)
+        self.wgt_drop_category.Bind(wx.EVT_COMBOBOX_CLOSEUP, self.evt_set_level3)
         self.wgt_drop_discipline.Bind(wx.EVT_COMBOBOX_CLOSEUP, self.evt_set_level3)
 
 
         szr_drop = wx.StaticBoxSizer(wx.StaticBox(self, label="Select the type for this part to fall under"), orient=wx.HORIZONTAL)
-        szr_drop.Add(self.wgt_drop_doctype, proportion=1, flag=wx.ALL, border=5)
+        szr_drop.Add(self.wgt_drop_category, proportion=1, flag=wx.ALL, border=5)
         szr_drop.Add(self.wgt_drop_discipline, proportion=1, flag=wx.ALL, border=5)
-        szr_drop.Add(self.wgt_drop_l3, proportion=1, flag=wx.ALL, border=5)
+        szr_drop.Add(self.wgt_drop_level3, proportion=1, flag=wx.ALL, border=5)
 
         # Tag addition box and bind
         self.wgt_add_tag = autocomplete.LowercaseTextCtrl(self, completer=self.ls_tags, style=wx.TE_PROCESS_ENTER)
@@ -141,22 +141,24 @@ class AddDocument(wx.Dialog):
                 event: An enter keystroke event object passed from the wx.TextCtrl
         """
 
-        if self.wgt_drop_discipline.GetValue() and self.wgt_drop_doctype.GetValue():
+        if self.wgt_drop_discipline.GetValue() and self.wgt_drop_category.GetValue():
 
             # Connect to the database
             conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
             crsr = conn.cursor()
 
             # Retrieve list of all tags from SQL database
-            crsr.execute("SELECT level3 "
+            crsr.execute("SELECT id, level3 "
                          "FROM Level3 "
                          "WHERE discipline_id=(?) "
                          "AND category_id=(?);",
                          (self.root_pane.discipline_to_id[self.wgt_drop_discipline.GetValue()],
-                          self.root_pane.category_to_id[self.wgt_drop_doctype.GetValue()]))
+                          self.root_pane.category_to_id[self.wgt_drop_category.GetValue()]))
 
             # Set possible options for level 3 dropdown
-            self.wgt_drop_l3.SetItems([i[0] for i in crsr.fetchall()])
+            _level3_tuples = crsr.fetchall()
+            self.level3_to_id = dict((level3, ident) for (ident, level3) in _level3_tuples)
+            self.wgt_drop_level3.SetItems([i[1] for i in _level3_tuples])
 
             # Close connection
             crsr.close()
@@ -183,35 +185,43 @@ class AddDocument(wx.Dialog):
         """
         # self.evt_add_tag(event)
 
-        # Add any new tags
-        self.root_pane.add_tags(self.ls_add_tags)
+        if self.wgt_drop_discipline.GetValue() and self.wgt_drop_category.GetValue():
 
-        # Connect to the database
-        conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
-        crsr = conn.cursor()
+            # Add any new tags
+            self.root_pane.add_tags(self.ls_add_tags)
 
-        # Add the new document to the library
-        crsr.execute("INSERT INTO Documents (file_name, title, category, discipline, user, time_added) "
-                     "VALUES ((?), (?), (?), (?), (?), (?));",
-                     (self.doc_name, self.wgt_title.GetValue(), self.root_pane.category_to_id[self.wgt_drop_doctype.GetValue()], self.root_pane.discipline_to_id[self.wgt_drop_discipline.GetValue()], os.getlogin(), str(datetime.datetime.now().timestamp())))
+            # Connect to the database
+            conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+            crsr = conn.cursor()
 
-        # Get ids of the document added and of the tags associated with it
-        _doc_id = crsr.lastrowid
-        _tag_ids = [self.root_pane.tag_to_id[tag] for tag in self.ls_tags]
+            # Add the new document to the library
+            crsr.execute("INSERT INTO Documents (file_name, title, category, discipline, level3, user, time_added) "
+                         "VALUES ((?), (?), (?), (?), (?), (?), (?));",
+                         (self.doc_name,
+                          self.wgt_title.GetValue(),
+                          self.root_pane.category_to_id[self.wgt_drop_category.GetValue()],
+                          self.root_pane.discipline_to_id[self.wgt_drop_discipline.GetValue()],
+                          self.level3_to_id[self.wgt_drop_level3.GetValue()] if self.wgt_drop_level3.GetValue() else None,
+                          os.getlogin(),
+                          str(datetime.datetime.now().timestamp())))
 
-        # Add the tags and document to the junction table
-        for _tag_id in _tag_ids:
-            print((".".join([str(_tag_id), str(_doc_id)]), _tag_id, _doc_id))
-            crsr.execute("INSERT INTO JunctionTable (name, tag_id, doc_id) "
-                         "VALUES ((?), (?), (?));",
-                         (".".join([str(_tag_id), str(_doc_id)]), _tag_id, _doc_id))
+            # Get ids of the document added and of the tags associated with it
+            _doc_id = crsr.lastrowid
+            _tag_ids = [self.root_pane.tag_to_id[tag] for tag in self.ls_tags]
 
-        # Commit changes and close connection
-        conn.commit()
-        crsr.close()
-        conn.close()
+            # Add the tags and document to the junction table
+            for _tag_id in _tag_ids:
+                print((".".join([str(_tag_id), str(_doc_id)]), _tag_id, _doc_id))
+                crsr.execute("INSERT INTO JunctionTable (name, tag_id, doc_id) "
+                             "VALUES ((?), (?), (?));",
+                             (".".join([str(_tag_id), str(_doc_id)]), _tag_id, _doc_id))
 
-        self.evt_close()
+            # Commit changes and close connection
+            conn.commit()
+            crsr.close()
+            conn.close()
+
+            self.evt_close()
 
     def evt_cancel(self, event):
         """Cancel the change and close the dialog
