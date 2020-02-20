@@ -18,26 +18,6 @@ import fn_path
 import fn_gfx
 import autocomplete
 
-DOCTYPE = ["Codes and Specifications",
-           "Reference Materials",
-           "Catalogues",
-           "Calculators"]
-
-DISCIPLINES = ["Mech",
-               "Structural",
-               "Geotech",
-               "Electrical",
-               "Seismic"]
-
-L3_DISP = ["Unicorns",
-           "Ponies",
-           "Fun Squirrels",
-           "CAKE",
-           "IS",
-           "LIE"]
-
-TEST_AUTO = ["aware","seat","pop","terrific","aromatic","chin","nosy","chickens","escape","airplane","encouraging","righteous","bell","surprise","scattered","barbarous","unbecoming","slip","metal","tired","grin","existence","crawl","odd","oranges","onerous","obnoxious","thought","blow","field","simplistic","scarce","madly","well-groomed","pleasure","laughable","sugar","hushed","chief","first","materialistic","roasted","purple","nervous","grey","smoggy","please","rampant","clumsy","utter","careless","wrench","erect","clear","taste","classy","mouth","wandering","grape","worthless","worm","expert","mass","park","alive","abandoned","valuable","instruct","self","rod","glossy","royal","statement","search","mammoth","nonstop","handsome","turkey","obedient","doll","horses","promise","stupid","corn","fall","steady","press","detailed","laugh","hateful","market","picture","versed","ground","boundary","bow","cake","juggle","jagged","impolite","touch","internal","oceanic","position","aloof","utopian","rapid","nut","employ","somber","lie","men","film","fax","porter","spurious","cemetery","hum","machine","gaze","crack","worry","macabre","scrape","real","flame","abnormal","perform","spicy","married","count","juvenile","mighty","live","tasteful","wrist","watery","wonder","shy","enthusiastic","cub","grade","disgusted","lean","hose","letters","guide","income","bored","divergent","party","scare","kick","overwrought","relieved","long-term","ablaze","identify","sofa","dinosaurs","wander","alike","offbeat","lumpy","basin","advise","tawdry","dynamic","quick","imminent","daily","behave","resolute","useless","toe","habitual","mushy","stove","tiny","simple","baby","rotten","wrathful","dear","bashful","help","precede","carry","needy","guitar","calculating","innocent","gratis","neat","calculator","reward","heat","heavenly","painstaking","ocean","grandmother","hapless","waggish","subtract","yak","form","chance","suck","uppity","fierce","slippery","daughter","toys","acoustic","cherries","magnificent","aspiring","flawless","elite","wet","lick","loss","treatment","foolish","feeble","surround","berry","damaging","minister","describe","yellow","houses","island","beginner","books","right","squalid","sturdy","bed","plan","excellent","well-made","stupendous","snow","icy","smart","delight","exclusive","sleep","homely","powerful","fold","crime","scratch","truck","wanting","safe","drum","desk","respect","instinctive","knowing","sloppy","fat","bear","spiritual","well-to-do","clean","tearful","warm","believe","bawdy","stone","useful","toothsome","hideous","spiders","potato","mean","discussion","equal","work","bottle","hole","confuse","slimy","story","goofy","motionless","flavor","hurt","pump","tree","yarn","berserk","motion","humorous","poke","jittery","women","aberrant","guess","ink","wait","earn","young","inexpensive","ceaseless","protest","tedious","harmonious","flaky","marry","deceive","tramp","subdued","draconian","calendar","adhesive","gaping","luxuriant","certain","bubble","separate","boorish","check","spring","guarantee","chalk","protect","side","aboriginal","cheerful","twig","fluttering","evanescent","confused","precious","determined","faithful","alluring","premium","rat","produce","capable","one","long","frightening","mine","star","swanky","lavish","gaudy","sigh","man","transport","sheet","stocking","pan","drain","include","offer","afraid","salty","amuse","consider","creepy","light","purring","bucket","expansion","wooden","float","replace","rabbit","moldy","dramatic","lively","communicate","spare","straight","ghost","screeching","lying","regular","resonant","volleyball","general","fix","grumpy","crate","sail","cream","suggestion","haunt","plate","found","lethal","pear","violent","breezy","fluffy","eggs","future","daffy","tangible","lumber","unique","connect","arrest","nice","fetch","obtain","psychedelic","lowly","helpful","plane","expand","feigned","truthful","harm","knowledge","dapper","look","suspect","friendly","oil","sneaky","sleepy","thunder","filthy","volcano","bolt","shoes","death","vacation","pollution","shoe","skirt","discovery","number","deliver","credit","health","nation","care","infamous","return","decay","redundant","greet","road","gate","repeat","brief","obsequious","tomatoes","unequaled","halting","ill","shirt","cover","dry","thread","drunk","applaud","smash","wheel","deep","inject","busy","stage","hurried","icky","disastrous","cooing","ruin","limit","chubby","dream","decisive","wary","toes","secret","voice","baseball","bathe","run","overjoyed","chop","rifle","slave","rain","wool","sad","accept","copper","lame","bit","knife"]
-
 
 class AddDocument(wx.Dialog):
     """Opens a dialog to edit document information prior to adding to the database
@@ -76,7 +56,7 @@ class AddDocument(wx.Dialog):
         self.wgt_filename = wx.StaticText(self, label=self.doc_name, style=wx.ALIGN_CENTER)
         self.wgt_drop_category = wx.ComboBox(self, choices=self.ls_category, style=wx.CB_READONLY)
         self.wgt_drop_discipline = wx.ComboBox(self, choices=self.ls_discipline, style=wx.CB_READONLY)
-        self.wgt_drop_level3 = wx.ComboBox(self, choices=L3_DISP, style=wx.CB_READONLY)
+        self.wgt_drop_level3 = wx.ComboBox(self, choices=[], style=wx.CB_READONLY)
 
         self.wgt_drop_category.Bind(wx.EVT_COMBOBOX_CLOSEUP, self.evt_set_level3)
         self.wgt_drop_discipline.Bind(wx.EVT_COMBOBOX_CLOSEUP, self.evt_set_level3)
@@ -144,7 +124,7 @@ class AddDocument(wx.Dialog):
         if self.wgt_drop_discipline.GetValue() and self.wgt_drop_category.GetValue():
 
             # Connect to the database
-            conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+            conn = sqlite3.connect(config.cfg['db_location'])
             crsr = conn.cursor()
 
             # Retrieve list of all tags from SQL database
@@ -191,7 +171,7 @@ class AddDocument(wx.Dialog):
             self.root_pane.add_tags(self.ls_add_tags)
 
             # Connect to the database
-            conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+            conn = sqlite3.connect(config.cfg['db_location'])
             crsr = conn.cursor()
 
             # Add the new document to the library

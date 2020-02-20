@@ -9,6 +9,7 @@ import fn_path
 
 import widget
 import tab
+import config
 
 class PaneMain(wx.Panel):
     """Master pane that contains the normal operational widgets for the application
@@ -88,7 +89,7 @@ class PaneMain(wx.Panel):
         """Loads a dictionary and the reverse dictionary for disciplines and their id in the SQL database"""
 
         # Connect to the database
-        conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+        conn = sqlite3.connect(config.cfg['db_location'])
         crsr = conn.cursor()
 
         # Retrieve list of all tags from SQL database
@@ -110,7 +111,7 @@ class PaneMain(wx.Panel):
         """Loads a dictionary and the reverse dictionary for disciplines and their id in the SQL database"""
 
         # Connect to the database
-        conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+        conn = sqlite3.connect(config.cfg['db_location'])
         crsr = conn.cursor()
 
         # Retrieve list of all tags from SQL database
@@ -132,7 +133,7 @@ class PaneMain(wx.Panel):
         """Loads a list of available tags from the SQL database and populates to self.tags"""
 
         # Connect to the database
-        conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+        conn = sqlite3.connect(config.cfg['db_location'])
         crsr = conn.cursor()
 
         # Retrieve list of all tags from SQL database
@@ -162,7 +163,7 @@ class PaneMain(wx.Panel):
         _new_tags = [(str(x),) for x in add_tags if str(x) not in self.ls_tags]
         if _new_tags:
             # Connect to the database
-            conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+            conn = sqlite3.connect(config.cfg['db_location'])
             crsr = conn.cursor()
 
             # Modify the existing cell in the database for existing part number and desired column
@@ -207,7 +208,7 @@ class PaneMain(wx.Panel):
         _temp_disc = [self.discipline_to_id[x.GetLabel()] for x in self.wgt_restrictions.wgt_ls_chk_disciplines if x.GetValue()]
 
         # Connect to the database
-        conn = sqlite3.connect(os.path.expandvars("%UserProfile%") + r"\PycharmProjects\Palanaeum\test.sqlite")
+        conn = sqlite3.connect(config.cfg['db_location'])
         crsr = conn.cursor()
 
         crsr.execute(" ".join(["SELECT file_name, title, category, discipline "
