@@ -162,18 +162,19 @@ class CompositeLibrary(wx.Panel):
                 event: A double-click event object passed from the list control
         """
 
-        # print(event.GetIndex())
-        # print(event.GetText())
-        file_name, title, id_category, id_discipline = (self.root_tab.search_results[event.GetIndex()])
-        category = self.root_pane.id_to_category[id_category]
-        discipline = self.root_pane.id_to_discipline[id_discipline]
-        print(os.path.join("basepath", category, discipline, file_name))
-        # print(self.root_tab.category)
-        # subprocess.run(['open', r"C:\Users\JA\Desktop\Contractor Orientation Checklist.pdf"], check=True)
-        # os.system(self.cmd_escape(r'C:\Users\JA\Desktop\Contractor Orientation Checklist.pdf'))
-        os.startfile(self.cmd_escape(r'C:\Users\JA\Desktop\Contractor Orientation Checklist.pdf'))
-        # subprocess.run(self.cmd_escape(r'C:\Users\JA\Desktop\Contractor Orientation Checklist.pdf'), )
-        print(5)
+        _file_name, _title, _id_category, _id_discipline, _id_level3 = (self.root_tab.search_results[event.GetIndex()])
+        _category = self.root_pane.id_to_category[_id_category]
+        _discipline = self.root_pane.id_to_discipline[_id_discipline]
+        _level3 = self.root_pane.id_to_level3[int(_id_level3)] if _id_level3 else None  # Need to int() the key
+
+        if _level3:
+            os.startfile(self.cmd_escape(
+                os.path.join(config.cfg['document_archive'], _category, _discipline, _level3, _file_name)
+            ))
+        else:
+            os.startfile(self.cmd_escape(
+                os.path.join(config.cfg['document_archive'], _category, _discipline, _file_name)
+            ))
 
     def evt_click_button(self, event):
         """Open a dialog to chose files to add after clicking the add button

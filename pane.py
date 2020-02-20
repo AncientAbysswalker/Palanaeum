@@ -42,6 +42,7 @@ class PaneMain(wx.Panel):
         # Mappings between id and discipline and id and category on their respective tables
         self.id_to_discipline, self.discipline_to_id = self.load_disciplines()
         self.id_to_category, self.category_to_id = self.load_categories()
+        self.id_to_level3, self.level3_to_id = self.load_level3()
 
         # Search bar and bind
         self.wgt_searchbar = wx.TextCtrl(self,
@@ -129,6 +130,28 @@ class PaneMain(wx.Panel):
 
         return id_to_category, category_to_id
 
+    def load_level3(self):
+        """Loads a dictionary and the reverse dictionary for disciplines and their id in the SQL database"""
+
+        # Connect to the database
+        conn = sqlite3.connect(config.cfg['db_location'])
+        crsr = conn.cursor()
+
+        # Retrieve list of all tags from SQL database
+        crsr.execute("SELECT id, level3 "
+                     "FROM Level3;")
+
+        # Write tags to self.tags and define enumeration for cross-reference
+        _level3_tuples = crsr.fetchall()
+        level3_to_id = dict((level3, ident) for (ident, level3) in _level3_tuples)
+        id_to_level3 = dict((ident, level3) for (ident, level3) in _level3_tuples)
+
+        # Close connection
+        crsr.close()
+        conn.close()
+
+        return id_to_level3, level3_to_id
+
     def reload_tags(self):
         """Loads a list of available tags from the SQL database and populates to self.tags"""
 
@@ -211,7 +234,7 @@ class PaneMain(wx.Panel):
         conn = sqlite3.connect(config.cfg['db_location'])
         crsr = conn.cursor()
 
-        crsr.execute(" ".join(["SELECT file_name, title, category, discipline "
+        crsr.execute(" ".join(["SELECT file_name, title, category, discipline, level3 "
                                "FROM Documents",
                                self.opt_str("WHERE", self.min_truth(1, [_truth_cat, _truth_disc])),
                                self.opt_str("category IN (%s)" % (",".join("?" * len(_temp_cat))), _truth_cat),
