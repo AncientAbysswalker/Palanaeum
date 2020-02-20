@@ -165,10 +165,32 @@ class AddDocument(wx.Dialog):
         """
         # self.evt_add_tag(event)
 
+        _category_id = self.root_pane.category_to_id[self.wgt_drop_category.GetValue()]
+        _category_name = self.wgt_drop_category.GetValue()
+        _discipline_id = self.root_pane.discipline_to_id[self.wgt_drop_discipline.GetValue()]
+        _discipline_name = self.wgt_drop_discipline.GetValue()
+        _level3_id = self.level3_to_id[self.wgt_drop_level3.GetValue()] if self.wgt_drop_level3.GetValue() else None
+        _level3_name = self.wgt_drop_level3.GetValue()
+
         if self.wgt_drop_discipline.GetValue() and self.wgt_drop_category.GetValue():
 
             # Add any new tags
             self.root_pane.add_tags(self.ls_add_tags)
+
+            # try:
+            # Make directory if needed
+            if _level3_name:
+                _path = os.path.join(config.cfg['document_archive'], _category_name, _discipline_name, _level3_name, self.doc_name)
+            else:
+                _path = os.path.join(config.cfg['document_archive'], _category_name, _discipline_name, self.doc_name)
+            print(_path)
+            if not os.path.exists(os.path.dirname(_path)):
+                os.makedirs(os.path.dirname(_path))
+
+            # print(os.path.join(_path, self.doc_name))
+
+            # Copy file
+            shutil.copy2(self.doc_path, _path)
 
             # Connect to the database
             conn = sqlite3.connect(config.cfg['db_location'])
@@ -179,9 +201,9 @@ class AddDocument(wx.Dialog):
                          "VALUES ((?), (?), (?), (?), (?), (?), (?));",
                          (self.doc_name,
                           self.wgt_title.GetValue(),
-                          self.root_pane.category_to_id[self.wgt_drop_category.GetValue()],
-                          self.root_pane.discipline_to_id[self.wgt_drop_discipline.GetValue()],
-                          self.level3_to_id[self.wgt_drop_level3.GetValue()] if self.wgt_drop_level3.GetValue() else None,
+                          _category_id,
+                          _discipline_id,
+                          _level3_id,
                           os.getlogin(),
                           str(datetime.datetime.now().timestamp())))
 
