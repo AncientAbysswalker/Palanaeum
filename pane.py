@@ -224,40 +224,45 @@ class PaneMain(wx.Panel):
                 args[0]: Either None or a button click event
         """
 
-        _truth_cat = any([checkbox.GetValue() for checkbox in self.wgt_restrictions.wgt_ls_chk_category])
-        _truth_disc = any([checkbox.GetValue() for checkbox in self.wgt_restrictions.wgt_ls_chk_disciplines])
+        # Is there restrictions (limitations) on category and discipline?
+        is_lim_cat = any([checkbox.GetValue() for checkbox in self.wgt_restrictions.wgt_ls_chk_category])
+        is_lim_disc = any([checkbox.GetValue() for checkbox in self.wgt_restrictions.wgt_ls_chk_disciplines])
+        ls_is_lim = [is_lim_cat, is_lim_disc]
 
-        _temp_cat = [self.category_to_id[x.GetLabel()] for x in self.wgt_restrictions.wgt_ls_chk_category if
-                     x.GetValue()]
-        _temp_disc = [self.discipline_to_id[x.GetLabel()] for x in self.wgt_restrictions.wgt_ls_chk_disciplines if
-                      x.GetValue()]
+        # List of restrictions (limitations) on category and discipline
+        ls_lim_cat = [self.category_to_id[x.GetLabel()] for x in self.wgt_restrictions.wgt_ls_chk_category
+                      if x.GetValue()]
+        ls_lim_disc = [self.discipline_to_id[x.GetLabel()] for x in self.wgt_restrictions.wgt_ls_chk_disciplines
+                       if x.GetValue()]
 
         # Connect to the database
         conn = sqlite3.connect(config.cfg['db_location'])
         crsr = conn.cursor()
 
+        # Complex SQL execution depending on what restrictions are chosen, if any
         crsr.execute(" ".join(["SELECT file_name, title, category, discipline, level3 "
                                "FROM Documents",
-                               self.opt_str("WHERE", self.min_truth(1, [_truth_cat, _truth_disc])),
-                               self.opt_str("category IN (%s)" % (",".join("?" * len(_temp_cat))), _truth_cat),
-                               self.opt_str("AND", self.min_truth(2, [_truth_cat, _truth_disc])),
-                               self.opt_str("discipline IN (%s);" % (",".join("?" * len(_temp_disc))), _truth_disc)]),
-                     (_temp_cat + _temp_disc))
+                               self.opt_str("WHERE", self.min_truth(1, ls_is_lim)),
+                               self.opt_str("category IN (%s)" % (",".join("?" * len(ls_lim_cat))), is_lim_cat),
+                               self.opt_str("AND", self.min_truth(2, ls_is_lim)),
+                               self.opt_str("discipline IN (%s);" % (",".join("?" * len(ls_lim_disc))), is_lim_disc)]),
+                     (ls_lim_cat + ls_lim_disc))
 
-        # Write tags to self.tags and define enumeration for cross-reference
+        # Grab search results and search string
         search_results = crsr.fetchall()
-
         search_string = self.wgt_searchbar.GetValue().strip()
 
-        _ot = [x.IsChecked() for x in self.wgt_restrictions.wgt_ls_chk_searchin]
+        # Determine what fields to search for text in
+        ls_searchin = [x.IsChecked() for x in self.wgt_restrictions.wgt_ls_chk_searchin]
 
         # Ensure there is something in the search bar before searching
         if search_string:
-            new_search = [s for s in search_results if ((search_string in s[0] if _ot[0] else False) or (
-                search_string in s[1] if _ot[
-                    1] else False))]  # search_string in (s[0] if 0 in _ot else []) or (s[1] if 1 in _ot else [])]
+            search_results_refined = [s for s in search_results
+                                      if ((search_string in s[0] if ls_searchin[0] else False) or
+                                          (search_string in s[1] if ls_searchin[1] else False))]
 
-            self.wgt_notebook.open_search_tab(search_string, new_search)
+            # Open new tab of results
+            self.wgt_notebook.open_search_tab(search_string, search_results_refined)
 
         # Close connection
         crsr.close()
