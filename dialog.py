@@ -179,11 +179,7 @@ class AddDocument(wx.Dialog):
 
             # try:
             # Make directory if needed
-            if _level3_name:
-                _path = os.path.join(config.cfg['document_archive'], _category_name, _discipline_name, _level3_name, self.doc_name)
-            else:
-                _path = os.path.join(config.cfg['document_archive'], _category_name, _discipline_name, self.doc_name)
-            print(_path)
+            _path = fn_path.concat_archive(self.doc_name, _category_name, _discipline_name, _level3_name)
             if not os.path.exists(os.path.dirname(_path)):
                 os.makedirs(os.path.dirname(_path))
 

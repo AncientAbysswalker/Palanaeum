@@ -167,14 +167,7 @@ class CompositeLibrary(wx.Panel):
         _discipline = self.root_pane.id_to_discipline[_id_discipline]
         _level3 = self.root_pane.id_to_level3[int(_id_level3)] if _id_level3 else None  # Need to int() the key
 
-        if _level3:
-            os.startfile(self.cmd_escape(
-                os.path.join(config.cfg['document_archive'], _category, _discipline, _level3, _file_name)
-            ))
-        else:
-            os.startfile(self.cmd_escape(
-                os.path.join(config.cfg['document_archive'], _category, _discipline, _file_name)
-            ))
+        os.startfile(self.cmd_escape(fn_path.concat_archive(_file_name, _category, _discipline, _level3)))
 
     def evt_click_button(self, event):
         """Open a dialog to chose files to add after clicking the add button

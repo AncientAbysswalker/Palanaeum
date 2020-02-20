@@ -22,6 +22,21 @@ def part_to_dir(part_num):
     dir3 = temp[2:]
     return [dir1, dir2, dir3]
 
+def concat_archive(document, category, discipline, level3=None):
+    """Convert a part number and image name into an expected path to that image in the image database
+
+        Args:
+            part_num (str): The part number to convert to a directory list
+            file (str): Image filename
+
+        Returns:
+            (str): A string which represents the concatenated path the indicated image file
+    """
+
+    if level3:
+        return os.path.join(config.cfg['document_archive'], category, discipline, level3, document)
+    else:
+        return os.path.join(config.cfg['document_archive'], category, discipline, document)
 
 def concat_img(part_num, file):
     """Convert a part number and image name into an expected path to that image in the image database
