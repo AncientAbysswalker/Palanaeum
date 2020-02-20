@@ -3,16 +3,12 @@
 
 
 import wx
-import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.ultimatelistctrl as ULC
-from math import ceil
 import os
 
-import config
-import fn_path
-import fn_gfx
-
 import dialog
+
+import fn_path
 
 
 class DummyFileDrop(wx.FileDropTarget):
@@ -128,14 +124,6 @@ class CompositeLibrary(wx.Panel):
             self.pnl_library.SetStringItem(i, 1, result[1])
             self.pnl_library.SetStringItem(i, 2, self.root_pane.id_to_category[result[2]])
             self.pnl_library.SetStringItem(i, 3, self.root_pane.id_to_discipline[result[3]])
-            #
-            # self.pnl_gallery.InsertStringItem(1, "Puffy")
-            # self.pnl_gallery.SetStringItem(1, 1, "Bring It!")
-            # self.pnl_gallery.SetStringItem(1, 2, "Pop")
-            #
-            # self.pnl_gallery.InsertStringItem(2, "Family Force 5")
-            # self.pnl_gallery.SetStringItem(2, 1, "III")
-            # self.pnl_gallery.SetStringItem(2, 2, "Crunk")
 
         self.pnl_library.SetColumnWidth(0, 120)
         self.pnl_library.SetColumnWidth(1, 120)

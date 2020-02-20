@@ -3,13 +3,12 @@
 
 import wx
 import sqlite3
-import os
-
-import fn_path
 
 import widget
 import tab
+
 import config
+import fn_path
 
 class PaneMain(wx.Panel):
     """Master pane that contains the normal operational widgets for the application
@@ -244,7 +243,6 @@ class PaneMain(wx.Panel):
 
         # Write tags to self.tags and define enumeration for cross-reference
         search_results = crsr.fetchall()
-        # print(_a)
 
         search_string = self.wgt_searchbar.GetValue().strip()
 

@@ -7,7 +7,6 @@ import os
 import hashlib
 import shutil
 import datetime
-
 import sqlite3
 
 import widget
@@ -182,8 +181,6 @@ class AddDocument(wx.Dialog):
             _path = fn_path.concat_archive(self.doc_name, _category_name, _discipline_name, _level3_name)
             if not os.path.exists(os.path.dirname(_path)):
                 os.makedirs(os.path.dirname(_path))
-
-            # print(os.path.join(_path, self.doc_name))
 
             # Copy file
             shutil.copy2(self.doc_path, _path)
