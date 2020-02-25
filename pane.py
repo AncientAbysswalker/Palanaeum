@@ -3,6 +3,7 @@
 
 import wx
 import sqlite3
+import os
 
 import widget
 import tab
@@ -33,6 +34,9 @@ class PaneMain(wx.Panel):
 
         # Parental inheritance
         self.parent = parent
+
+        # Set user for application
+        self.user = os.getlogin()
 
         # Load tags and the mapping of tag to id
         self.ls_tags = []
