@@ -30,3 +30,4 @@ class LowercaseTextCtrl(wx.TextCtrl):
             text_ctrl.AppendText(chr(key).lower())
             return
         event.Skip()
+

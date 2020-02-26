@@ -89,6 +89,7 @@ class AddDocument(wx.Dialog):
         # Tag addition box and bind
         self.wgt_add_tag = autocomplete.LowercaseTextCtrl(self, completer=self.ls_tags, style=wx.TE_PROCESS_ENTER)
         self.wgt_add_tag.Bind(wx.EVT_TEXT_ENTER, self.evt_add_tag)
+        self.wgt_add_tag.Bind(wx.EVT_TEXT_PASTE, self.evt_paste)
 
         szr_add_tag = wx.StaticBoxSizer(
             wx.StaticBox(self, label="Add Tags - Press [ENTER] to commit tags; mutliple tags can be added:"),
@@ -181,7 +182,7 @@ class AddDocument(wx.Dialog):
         """
 
         if self.wgt_add_tag.GetValue().strip() and self.wgt_add_tag.GetValue() not in self.ls_add_tags:
-            self.ls_add_tags.append(self.wgt_add_tag.GetValue())
+            self.ls_add_tags.append(self.wgt_add_tag.GetValue().strip())
             self.wgt_tags.SetValue("\n".join(self.ls_add_tags))
 
         self.wgt_add_tag.SetValue("")
@@ -265,6 +266,15 @@ class AddDocument(wx.Dialog):
         """
 
         self.DestroyLater()
+
+    def evt_paste(self, event):
+        """Prevents any text from being pasted into the widget
+
+            Args:
+                event: Paste event from parent wx widget
+        """
+
+        print("PASTE but nothing happens")
 
 
 class AddLevel3(wx.Dialog):
