@@ -195,14 +195,15 @@ class AddDocument(wx.Dialog):
         """
         # self.evt_add_tag(event)
 
-        _category_id = self.root_pane.category_to_id[self.wgt_drop_category.GetValue()]
         _category_name = self.wgt_drop_category.GetValue()
-        _discipline_id = self.root_pane.discipline_to_id[self.wgt_drop_discipline.GetValue()]
         _discipline_name = self.wgt_drop_discipline.GetValue()
-        _level3_id = self.level3_to_id[self.wgt_drop_level3.GetValue()] if self.wgt_drop_level3.GetValue() else None
-        _level3_name = self.wgt_drop_level3.GetValue()
 
-        if self.wgt_drop_discipline.GetValue() and self.wgt_drop_category.GetValue():
+        if _category_name and _discipline_name:
+
+            _discipline_id = self.root_pane.discipline_to_id[self.wgt_drop_discipline.GetValue()]
+            _category_id = self.root_pane.category_to_id[self.wgt_drop_category.GetValue()]
+            _level3_id = self.level3_to_id[self.wgt_drop_level3.GetValue()] if self.wgt_drop_level3.GetValue() else None
+            _level3_name = self.wgt_drop_level3.GetValue()
 
             # Add any new tags
             self.root_pane.add_tags(self.ls_add_tags)

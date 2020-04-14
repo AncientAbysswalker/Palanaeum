@@ -262,8 +262,8 @@ class PaneMain(wx.Panel):
         # Ensure there is something in the search bar before searching
         if search_string:
             search_results_refined = [s for s in search_results
-                                      if ((search_string in s[0] if ls_searchin[0] else False) or
-                                          (search_string in s[1] if ls_searchin[1] else False))]
+                                      if ((search_string.lower() in s[0].lower() if ls_searchin[0] else False) or
+                                          (search_string.lower() in s[1].lower() if ls_searchin[1] else False))]
 
             # Open new tab of results
             self.wgt_notebook.open_search_tab(search_string, search_results_refined)
